@@ -308,11 +308,11 @@ export function renderMediaSlides(container, items, resultThumbnail) {
       } else {
         const img = document.createElement("img");
         const imageSrc =
+          (typeof dl.url === "string" && dl.url ? dl.url : "") ||
           dl.thumbnail ||
-          (typeof dl.url === "string" ? dl.url : "") ||
           resultThumbnail ||
           "";
-        setupImageLoading(img, imageSrc, resultThumbnail);
+        setupImageLoading(img, imageSrc, dl.thumbnail || resultThumbnail);
         slide.appendChild(img);
       }
     }
@@ -752,6 +752,17 @@ export function renderResult(result, originalUrl) {
 
     const isMultiTrackContent = isPlaylistOrAlbum || hasTrackNumbers;
 
+    const photoDownloads = (result.downloads || []).filter((d) => {
+      const t = (d.type || "").toUpperCase();
+      const u = (d.url || "").toLowerCase();
+      return (
+        t.includes("PHOTO") ||
+        t.includes("IMAGE") ||
+        /\.(jpg|jpeg|png|webp)/i.test(u)
+      );
+    });
+    const isMultiPhoto = photoDownloads.length > 1;
+
     let failedIndices = [];
     let allBtn = null;
     let titleText = "";
@@ -872,10 +883,14 @@ export function renderResult(result, originalUrl) {
 
             let dlResult = null;
             try {
+              let trackTitle = result.title;
+              if (isMultiPhoto && photoDownloads.includes(item)) {
+                trackTitle = `${result.title}_${photoDownloads.indexOf(item) + 1}`;
+              }
               dlResult = await startNativeDownload(
                 item.url,
                 item.type,
-                result.title,
+                trackTitle,
                 targetBtn,
                 result.sourceUrl || originalUrl,
                 false, // don't reset cancel flag between tracks
@@ -1027,10 +1042,14 @@ export function renderResult(result, originalUrl) {
       }
 
       btn.addEventListener("click", async (e) => {
+        let itemTitle = result.title;
+        if (isMultiPhoto && photoDownloads.includes(dl)) {
+          itemTitle = `${result.title}_${photoDownloads.indexOf(dl) + 1}`;
+        }
         const res = await startNativeDownload(
           dl.url,
           dl.type,
-          result.title,
+          itemTitle,
           e.currentTarget,
           result.sourceUrl || originalUrl,
         );

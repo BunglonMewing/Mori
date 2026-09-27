@@ -770,6 +770,14 @@ function generateFilename(title, type, index) {
   if (isTrackType) {
     effectiveTitle =
       cleanTypeLabel.replace(/^\d+\.\s+/, "").trim() || cleanTypeLabel;
+  } else if (
+    index !== undefined &&
+    index !== null &&
+    (cleanTypeLabel.includes("PHOTO") ||
+      cleanTypeLabel.includes("IMAGE") ||
+      cleanTypeLabel.includes("Page"))
+  ) {
+    effectiveTitle = `${effectiveTitle}_${Number(index) + 1}`;
   }
 
   let sanitized = (effectiveTitle || "")
@@ -907,7 +915,7 @@ function updateHistorySavedFile(filename, savedPath) {
           path: savedPath,
           uri: savedPath,
           type: isVideo ? "VIDEO" : isAudio ? "MP3" : "IMAGE",
-          thumbnail: null,
+          thumbnail: first.thumbnail || null,
           title: trackTitle,
         });
       }

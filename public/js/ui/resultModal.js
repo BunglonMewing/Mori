@@ -227,7 +227,10 @@ export async function showModal(item, onRedownload) {
                   ? "MP3"
                   : "IMAGE");
 
-            const thumb = file.thumbnail || item.localThumbnail || item.thumbnail;
+            const isImg = mediaType === "IMAGE";
+            const thumb = isImg
+              ? toCapacitorUrl(fileSrc)
+              : file.thumbnail || item.localThumbnail || item.thumbnail;
 
             displayItems.push({
               url: toCapacitorUrl(fileSrc),
@@ -249,12 +252,13 @@ export async function showModal(item, onRedownload) {
           : fileSrc.toLowerCase().endsWith(".mp3")
             ? "MP3"
             : "IMAGE";
+        const isImg = mediaType === "IMAGE";
         displayItems.push({
           url: toCapacitorUrl(fileSrc),
           rawPath: item.localUri,
           rawUri: item.localUri,
           type: mediaType,
-          thumbnail: item.localThumbnail || item.thumbnail,
+          thumbnail: isImg ? toCapacitorUrl(fileSrc) : (item.localThumbnail || item.thumbnail),
           title: item.title,
           isLocal: true,
         });
@@ -269,13 +273,14 @@ export async function showModal(item, onRedownload) {
                 : localUrl.toLowerCase().includes(".mp3")
                   ? "MP3"
                   : "IMAGE");
+            const isImg = mediaType === "IMAGE";
             displayItems.push({
               url: localUrl,
               remoteUrl: dl.url || dl.src,
               rawPath: dl.localPath || dl.path || localUrl,
               rawUri: dl.localUri || dl.uri || localUrl,
               type: mediaType,
-              thumbnail: dl.thumbnail || item.localThumbnail || item.thumbnail,
+              thumbnail: isImg ? localUrl : (dl.thumbnail || item.localThumbnail || item.thumbnail),
               title: dl.title || item.title,
               isLocal: true,
             });
@@ -292,10 +297,11 @@ export async function showModal(item, onRedownload) {
 
       if (photoDownloads.length > 0) {
         photoDownloads.forEach((dl) => {
+          const photoUrl = dl.url || dl.src;
           displayItems.push({
-            url: dl.url || dl.src,
+            url: photoUrl,
             type: "IMAGE",
-            thumbnail: dl.thumbnail || item.thumbnail,
+            thumbnail: dl.thumbnail || photoUrl || item.thumbnail,
             title: dl.title || item.title,
             isLocal: false,
           });

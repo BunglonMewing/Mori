@@ -109,32 +109,68 @@ export function renderHistory(onItemClick, onDeleteClick) {
     let thumbSrc = isDataSaver ? defaultPlaceholder : null;
 
     if (!isDataSaver) {
-      const isValidThumb = (t) => typeof t === "string" && t.length > 0 && !t.startsWith("thumb_");
+      const isValidThumb = (t) =>
+        typeof t === "string" &&
+        t.length > 0 &&
+        !t.startsWith("thumb_") &&
+        !t.startsWith("/") &&
+        !t.startsWith("file://");
 
       if (isValidThumb(item.localThumbnail)) {
         thumbSrc = item.localThumbnail;
-      } else if (item.localFiles && item.localFiles.length > 0 && isValidThumb(item.localFiles[0].thumbnail)) {
-        thumbSrc = item.localFiles[0].thumbnail;
       } else if (isValidThumb(item.thumbnail)) {
         thumbSrc = item.thumbnail;
+      } else if (item.localFiles && item.localFiles.length > 0 && isValidThumb(item.localFiles[0].thumbnail)) {
+        thumbSrc = item.localFiles[0].thumbnail;
       } else if (item.localFiles && item.localFiles.length > 0) {
         const first = item.localFiles[0];
-        if (first.type === "IMAGE") {
-          thumbSrc = window.Capacitor?.convertFileSrc(first.uri || first.path);
-        }
-      } else if (item.localUri && window.Capacitor) {
-        const isImage = /\.(jpg|jpeg|png|webp)/i.test(item.localUri);
-        if (isImage) {
-          thumbSrc = window.Capacitor.convertFileSrc(item.localUri);
+        thumbSrc = first.thumbnail || first.uri || first.path;
+      } else if (item.localUri) {
+        thumbSrc = item.localUri;
+      }
+
+      if (
+        thumbSrc &&
+        !thumbSrc.startsWith("http") &&
+        !thumbSrc.startsWith("data:") &&
+        !thumbSrc.startsWith("blob:") &&
+        !thumbSrc.startsWith("capacitor:")
+      ) {
+        if (window.__TAURI__) {
+          const tauriConvert =
+            window.__TAURI__?.core?.convertFileSrc ||
+            window.__TAURI_INTERNALS__?.convertFileSrc ||
+            window.__TAURI__?.convertFileSrc;
+          if (tauriConvert) {
+            let p = thumbSrc.replace(/^file:\/\//i, "");
+            try {
+              p = decodeURIComponent(p);
+            } catch (_) {}
+            thumbSrc = tauriConvert(p);
+          }
+        } else if (window.Capacitor?.convertFileSrc) {
+          let raw = thumbSrc;
+          if (raw.includes("_capacitor_file_")) {
+            raw = raw.substring(raw.indexOf("_capacitor_file_") + 16);
+          }
+          if (!raw.startsWith("file://")) {
+            if (!raw.startsWith("/") && window.Capacitor.getPlatform?.() === "android") {
+              raw = "/storage/emulated/0/" + raw;
+            }
+            raw = "file://" + (raw.startsWith("/") ? raw : "/" + raw);
+          }
+          thumbSrc = window.Capacitor.convertFileSrc(raw);
         }
       }
     }
 
     if (!thumbSrc) thumbSrc = defaultPlaceholder;
 
+    const fallbackUrl = item.thumbnail || defaultPlaceholder;
+
     card.innerHTML = `
       <div class="history-thumb-container">
-          <img src="${escapeHtml(thumbSrc)}" alt="" class="hist-img" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${defaultPlaceholder}';">
+          <img src="${escapeHtml(thumbSrc)}" alt="" class="hist-img" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${escapeHtml(fallbackUrl)}';">
           ${item.localFiles && item.localFiles.length > 1 ? `<div class="multi-indicator">${item.localFiles.length}</div>` : ""}
           ${isDownloading ? `<div class="hist-downloading-overlay"><div class="hist-dl-spinner"></div></div>` : ""}
       </div>

@@ -6,11 +6,12 @@ import { currentLang } from "../modules/core.js";
 /**
  * Removes temporary .tmp files across all search directories
  */
-export async function cleanupTempFiles(fullPath, fileName, directoriesToTry) {
-  if (!Filesystem) return;
+export async function cleanupTempFiles(fullPath, targetName, directoriesToTry) {
+  if (!Filesystem || !targetName) return;
+  const tempName = targetName.endsWith(".tmp") ? targetName : `${targetName}.tmp`;
   for (const dir of directoriesToTry) {
     await Filesystem.deleteFile({
-      path: fullPath + "/" + `${fileName}.tmp`,
+      path: fullPath + "/" + tempName,
       directory: dir,
     }).catch(() => {});
   }
@@ -80,13 +81,15 @@ export async function saveToStorage({
   }
 
   // 2. Mobile / Capacitor Filesystem Download
+  const tempFileName = `${fileName}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}.tmp`;
+
   if (!savedFile && Filesystem) {
     for (const dir of directoriesToTry) {
       if (savedFile) break;
       attempts = 0;
       while (attempts < maxAttempts && !savedFile) {
         if (checkCancelled()) {
-          await cleanupTempFiles(fullPath, fileName, directoriesToTry);
+          await cleanupTempFiles(fullPath, tempFileName, directoriesToTry);
           return { savedFile: null, successfulDir, cancelled: true };
         }
         attempts++;
@@ -99,7 +102,6 @@ export async function saveToStorage({
           const isForceIpv4 =
             localStorage.getItem("mori_force_ipv4") === "true";
 
-          const tempFileName = `${fileName}.tmp`;
           const dlOpts = {
             url: actualDownloadUrl,
             path: fullPath + "/" + tempFileName,
@@ -142,7 +144,7 @@ export async function saveToStorage({
           );
           // Clean up leftover .tmp file on error
           await Filesystem.deleteFile({
-            path: fullPath + "/" + `${fileName}.tmp`,
+            path: fullPath + "/" + tempFileName,
             directory: dir,
           }).catch(() => {});
 
@@ -184,10 +186,10 @@ export async function saveToStorage({
 
   if (!savedFile) {
     if (checkCancelled()) {
-      await cleanupTempFiles(fullPath, fileName, directoriesToTry);
+      await cleanupTempFiles(fullPath, tempFileName, directoriesToTry);
       return { savedFile: null, successfulDir, cancelled: true };
     }
-    await cleanupTempFiles(fullPath, fileName, directoriesToTry);
+    await cleanupTempFiles(fullPath, tempFileName, directoriesToTry);
     throw new Error(
       translations[currentLang]?.["toast-download-failed"] || "Download failed",
     );

@@ -130,8 +130,14 @@ export function handleScrapeError(err, status = null) {
 export async function cleanupOrphanedTempFiles() {
   if (!Filesystem) return;
   const directoriesToTry = ["EXTERNAL_STORAGE", "DOCUMENTS", "EXTERNAL"];
-  const videoPath = `Download/${localStorage.getItem("mori_download_path") || "Mori"}`;
-  const musicPath = `Download/${localStorage.getItem("mori_music_path") || "Mori/Music"}`;
+  const normalize = (val, fallback) => {
+    const raw = (val || fallback).trim().replace(/^\/+/, "");
+    if (raw === "Mori") return "Download/Mori";
+    if (raw === "Mori/Music") return "Download/Mori/Music";
+    return raw.toLowerCase().startsWith("download") ? raw : `Download/${raw}`;
+  };
+  const videoPath = normalize(localStorage.getItem("mori_download_path"), "Download/Mori");
+  const musicPath = normalize(localStorage.getItem("mori_music_path"), "Download/Mori/Music");
   const platforms = [
     "",
     "/TikTok",

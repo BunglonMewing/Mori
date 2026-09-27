@@ -5,6 +5,7 @@ build/
 android/app/build
 android/.gradle
 bin/
+test/
 
 # Capacitor & Android Specs
 android/local.properties

@@ -1265,7 +1265,12 @@ export async function exportGalleryToPdf(title, items) {
     const fileName = `${(title || "Gallery").replace(/[^\w\s]/gi, "").trim()}_${Date.now()}.pdf`;
 
     // Dynamic folder structure for PDF exports
-    let pdfSubfolder = localStorage.getItem("mori_download_path") || "Mori";
+    let pdfSubfolder = (
+      localStorage.getItem("mori_download_path") || "Download/Mori"
+    ).trim();
+    if (pdfSubfolder === "Mori") {
+      pdfSubfolder = "Download/Mori";
+    }
     if (localStorage.getItem("mori_auto_folder") !== "false") {
       const firstUrl = (items[0]?.url || "").toLowerCase();
       let platformFolder = "Other";
@@ -1321,7 +1326,12 @@ export async function exportGalleryToPdf(title, items) {
       pdfSubfolder = `${pdfSubfolder}/${platformFolder}`;
     }
 
-    const targetPdfPath = `Download/${pdfSubfolder}/${fileName}`;
+    // ponytail: cegah duplikasi Download/ jika path sudah memiliki prefix
+    const cleanSub = pdfSubfolder.replace(/^\/+/, "");
+    const targetFolder = cleanSub.toLowerCase().startsWith("download")
+      ? cleanSub
+      : `Download/${cleanSub}`;
+    const targetPdfPath = `${targetFolder}/${fileName}`;
 
     if (window.Capacitor?.isNativePlatform?.()) {
       showToast(translations[currentLang]["pdf-toast-saving"]);
@@ -1364,8 +1374,7 @@ export async function exportGalleryToPdf(title, items) {
       let savedTauri = false;
       if (tauriInvoke) {
         try {
-          const customFolder =
-            localStorage.getItem("mori_download_path") || "Mori";
+          const customFolder = targetFolder;
           await tauriInvoke("tauri_save_bytes_file", {
             bytes: Array.from(pdfBytes),
             filename: fileName,

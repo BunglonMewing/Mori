@@ -67,40 +67,113 @@
 
 (function () {
   const nav = document.getElementById("main-nav");
-  const navLinks = document.querySelectorAll(".nav-links a");
-  const sections = document.querySelectorAll("section[id]");
+  const navLinks = Array.from(document.querySelectorAll(".nav-links a"));
+  const trackedIds = navLinks
+    .map((a) => (a.getAttribute("href") || "").replace(/^#/, ""))
+    .filter(Boolean);
 
   function getNavH() {
     return nav ? nav.offsetHeight : 64;
   }
 
-  // Handle anchor clicks with exact navbar offset so section never scrolls too far up
-  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-    anchor.addEventListener("click", function (e) {
-      const hash = this.getAttribute("href");
-      if (!hash || hash === "#") return;
-
-      if (hash === "#top") {
-        e.preventDefault();
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        return;
+  function setActive(targetId) {
+    navLinks.forEach((a) => {
+      const href = a.getAttribute("href");
+      if (href === `#${targetId}`) {
+        a.classList.add("active");
+      } else {
+        a.classList.remove("active");
       }
+    });
+  }
 
+  function updateScrollSpy() {
+    if (window.scrollY < 200) {
+      setActive("");
+      return;
+    }
+
+    const isBottom =
+      window.innerHeight + window.scrollY >=
+      document.documentElement.scrollHeight - 80;
+    if (isBottom) {
+      setActive(trackedIds[trackedIds.length - 1]);
+      return;
+    }
+
+    const navH = getNavH() + 48;
+    const scrollPos = window.scrollY + navH;
+    let currentId = "";
+
+    for (let i = 0; i < trackedIds.length; i++) {
+      const sec = document.getElementById(trackedIds[i]);
+      if (sec && sec.offsetTop <= scrollPos) {
+        currentId = trackedIds[i];
+      }
+    }
+
+    setActive(currentId);
+  }
+
+  let isNavClicking = false;
+  let scrollDebounceTimer = null;
+
+  function endNavClick() {
+    isNavClicking = false;
+    clearTimeout(scrollDebounceTimer);
+    updateScrollSpy();
+  }
+
+  document.addEventListener("click", function (e) {
+    const link = e.target.closest('a[href^="#"]');
+    if (!link) return;
+
+    const hash = link.getAttribute("href");
+    if (!hash || hash === "#") return;
+
+    if (hash === "#top") {
+      e.preventDefault();
+      isNavClicking = true;
+      setActive("");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    try {
       const target = document.querySelector(hash);
       if (!target) return;
 
       e.preventDefault();
+      const targetId = hash.slice(1);
+
+      if (trackedIds.includes(targetId)) {
+        isNavClicking = true;
+        setActive(targetId);
+      }
+
       const navH = getNavH();
       const heading = target.querySelector("h2, h3");
-      const anchor = heading || target;
+      const anchorEl = heading || target;
       const targetPos =
-        anchor.getBoundingClientRect().top + window.scrollY - navH - 48;
+        anchorEl.getBoundingClientRect().top + window.scrollY - navH - 40;
 
       window.scrollTo({
         top: Math.max(0, targetPos),
         behavior: "smooth",
       });
-    });
+    } catch (_) {}
+  });
+
+  ["wheel", "touchstart"].forEach((evt) => {
+    window.addEventListener(
+      evt,
+      () => {
+        if (isNavClicking) {
+          endNavClick();
+        }
+      },
+      { passive: true },
+    );
   });
 
   function onScroll() {
@@ -108,25 +181,13 @@
     nav.style.boxShadow =
       scrollY > 10 ? "0 4px 24px rgba(26,24,20,0.08)" : "none";
 
-    // Active link highlight
-    const navH = getNavH() + 32;
-    let currentId = "";
-    sections.forEach((sec) => {
-      const top = sec.offsetTop - navH;
-      const height = sec.offsetHeight;
-      if (scrollY >= top && scrollY < top + height) {
-        currentId = sec.getAttribute("id");
-      }
-    });
+    if (isNavClicking) {
+      clearTimeout(scrollDebounceTimer);
+      scrollDebounceTimer = setTimeout(endNavClick, 120);
+      return;
+    }
 
-    navLinks.forEach((a) => {
-      const href = a.getAttribute("href");
-      if (href === `#${currentId}`) {
-        a.classList.add("active");
-      } else {
-        a.classList.remove("active");
-      }
-    });
+    updateScrollSpy();
   }
 
   window.addEventListener("scroll", onScroll, { passive: true });
@@ -234,7 +295,6 @@
   });
 })();
 
-// ===== FOCUS CENTER CAROUSEL =====
 (function () {
   const container = document.getElementById("focus-carousel");
   if (!container) return;
@@ -531,6 +591,12 @@
   const starEls = document.querySelectorAll(".js-github-stars");
   if (!starEls.length) return;
 
+  function formatCount(count) {
+    return count >= 1000
+      ? (count / 1000).toFixed(1).replace(/\.0$/, "") + "k"
+      : String(count);
+  }
+
   function render(countStr) {
     starEls.forEach((el) => {
       el.textContent = "★ " + countStr;
@@ -538,43 +604,50 @@
     });
   }
 
-  const CACHE_KEY = "mori_gh_stars";
-  const CACHE_TIME_KEY = "mori_gh_stars_time";
-  const ONE_HOUR = 3600000;
+  const CACHE_KEY = "mori_gh_stars_count";
 
+  let currentStars = null;
   try {
-    const cached = sessionStorage.getItem(CACHE_KEY);
-    const cachedTime = sessionStorage.getItem(CACHE_TIME_KEY);
-    if (cached && cachedTime && Date.now() - Number(cachedTime) < ONE_HOUR) {
-      render(cached);
-      return;
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const num = parseInt(cached, 10);
+      if (!isNaN(num) && num > 0) {
+        currentStars = num;
+        render(formatCount(currentStars));
+      }
     }
-  } catch (_) {
-    // Ignore storage error
+  } catch (_) {}
+
+  // Fetch updated count; fallback to shields.io when GitHub API hits rate limit
+  function fetchStars() {
+    return fetch("https://api.github.com/repos/coflyn/Mori")
+      .then((res) => {
+        if (!res.ok) throw new Error("GitHub API " + res.status);
+        return res.json().then((d) => d.stargazers_count);
+      })
+      .catch(() => {
+        return fetch(
+          "https://img.shields.io/github/stars/coflyn/Mori.json",
+        ).then((res) => {
+          if (!res.ok) throw new Error("Shields API " + res.status);
+          return res.json().then((d) => parseInt(d.value, 10));
+        });
+      });
   }
 
-  fetch("https://api.github.com/repos/coflyn/Mori")
-    .then((res) => {
-      if (!res.ok) throw new Error("Status " + res.status);
-      return res.json();
-    })
-    .then((data) => {
-      if (typeof data.stargazers_count === "number") {
-        const count = data.stargazers_count;
-        const formatted =
-          count >= 1000
-            ? (count / 1000).toFixed(1).replace(/\.0$/, "") + "k"
-            : String(count);
-        try {
-          sessionStorage.setItem(CACHE_KEY, formatted);
-          sessionStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
-        } catch (_) {}
-        render(formatted);
+  fetchStars()
+    .then((count) => {
+      if (typeof count === "number" && !isNaN(count) && count > 0) {
+        if (currentStars === null || count >= currentStars) {
+          currentStars = count;
+          try {
+            localStorage.setItem(CACHE_KEY, String(count));
+          } catch (_) {}
+          render(formatCount(count));
+        }
       }
     })
-    .catch(() => {
-      // Graceful silent fallback
-    });
+    .catch(() => {});
 })();
 
 (function () {
@@ -699,6 +772,25 @@
   const GITHUB_RELEASE_KEY = "mori_latest_release_data";
   const GITHUB_RELEASE_TIME = "mori_latest_release_time";
 
+  function detectUserOS() {
+    const ua = navigator.userAgent || "";
+    const platform =
+      (navigator.userAgentData && navigator.userAgentData.platform) ||
+      navigator.platform ||
+      "";
+
+    if (/android/i.test(ua)) return "android";
+    if (
+      /iphone|ipad|ipod/i.test(ua) ||
+      (platform === "MacIntel" && navigator.maxTouchPoints > 1)
+    ) {
+      return "ios";
+    }
+    if (/win/i.test(platform) || /windows/i.test(ua)) return "windows";
+    if (/mac/i.test(platform) || /macintosh|mac os x/i.test(ua)) return "macos";
+    return null;
+  }
+
   function applyDownloadMeta(v, assets = {}) {
     if (!v) return;
     const tag = v.startsWith("v") ? v : "v" + v;
@@ -726,6 +818,60 @@
         card.href = `https://github.com/coflyn/Mori/releases/tag/${tag}`;
       }
     });
+
+    // Smart OS Auto-detection for Hero CTA and Floating button
+    const os = detectUserOS();
+    const heroBtn = document.getElementById("hero-download-btn");
+    const floatingBtn = document.getElementById("floating-dl-btn");
+    const floatingText = document.getElementById("floating-dl-text");
+
+    const osMeta = {
+      android: {
+        heroText: "Download for Android (.apk)",
+        floatingText: "Download APK",
+      },
+      macos: {
+        heroText: "Download for macOS (.dmg)",
+        floatingText: "Download macOS",
+      },
+      windows: {
+        heroText: "Download for Windows (.exe)",
+        floatingText: "Download Windows",
+      },
+      ios: {
+        heroText: "Download for iOS (.ipa)",
+        floatingText: "Download .IPA",
+      },
+    };
+
+    if (os && osMeta[os]) {
+      const targetUrl =
+        assets && assets[os]
+          ? assets[os]
+          : `https://github.com/coflyn/Mori/releases/tag/${tag}`;
+
+      if (heroBtn) {
+        heroBtn.textContent = osMeta[os].heroText;
+        heroBtn.href = targetUrl;
+      }
+      if (floatingBtn) {
+        floatingBtn.href = targetUrl;
+      }
+      if (floatingText) {
+        floatingText.textContent = osMeta[os].floatingText;
+      }
+    } else {
+      if (heroBtn) {
+        heroBtn.textContent = "Download free";
+        heroBtn.href = "#download";
+      }
+      if (floatingBtn) {
+        floatingBtn.href = "#download";
+      }
+      if (floatingText) {
+        floatingText.textContent = "Download Mori";
+      }
+    }
 
     const schemaScript = document.querySelector(
       'script[type="application/ld+json"]',
@@ -845,4 +991,37 @@
         </div>`;
       syncDownloadRelease();
     });
+
+  // Floating Mobile Download Button visibility toggle on scroll
+  (function () {
+    const floatingDl = document.getElementById("floating-dl");
+    const hero = document.querySelector(".hero");
+    if (!floatingDl) return;
+
+    let ticking = false;
+    function updateFloatingVisibility() {
+      const heroBottom = hero ? hero.offsetTop + hero.offsetHeight : 450;
+      if (window.scrollY > heroBottom - 80) {
+        floatingDl.classList.add("is-visible");
+        floatingDl.setAttribute("aria-hidden", "false");
+      } else {
+        floatingDl.classList.remove("is-visible");
+        floatingDl.setAttribute("aria-hidden", "true");
+      }
+      ticking = false;
+    }
+
+    window.addEventListener(
+      "scroll",
+      function () {
+        if (!ticking) {
+          requestAnimationFrame(updateFloatingVisibility);
+          ticking = true;
+        }
+      },
+      { passive: true },
+    );
+
+    updateFloatingVisibility();
+  })();
 })();

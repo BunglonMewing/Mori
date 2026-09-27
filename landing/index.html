@@ -26,7 +26,10 @@
       property="og:description"
       content="Free media downloader for TikTok, Instagram, YouTube, Spotify, and 10 more. No watermarks. No accounts. No tracking."
     />
-    <meta property="og:image" content="https://getmori.vercel.app/assets/icon.png" />
+    <meta
+      property="og:image"
+      content="https://getmori.vercel.app/assets/icon.png"
+    />
     <meta property="og:image:alt" content="Mori · Media Downloader" />
 
     <!-- Twitter / X -->
@@ -36,12 +39,18 @@
       name="twitter:description"
       content="Free, private downloader for videos, photos, and music from 14 platforms. No ads, no accounts. Runs entirely on your device."
     />
-    <meta name="twitter:image" content="https://getmori.vercel.app/assets/icon.png" />
+    <meta
+      name="twitter:image"
+      content="https://getmori.vercel.app/assets/icon.png"
+    />
     <meta name="twitter:image:alt" content="Mori Logo" />
 
     <!-- Favicons & Icons -->
     <link rel="icon" href="assets/logo.png" type="image/png" />
-    <link rel="apple-touch-icon" href="https://getmori.vercel.app/assets/icon.png" />
+    <link
+      rel="apple-touch-icon"
+      href="https://getmori.vercel.app/assets/icon.png"
+    />
 
     <!-- Google Fonts & Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -56,99 +65,103 @@
 
     <!-- Structured Data (Schema.org JSON-LD) -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "WebSite",
-          "@id": "https://getmori.vercel.app/#website",
-          "url": "https://getmori.vercel.app/",
-          "name": "Mori",
-          "description": "Free, private downloader for videos, photos, and music from 14 platforms.",
-          "inLanguage": "en-US"
-        },
-        {
-          "@type": "SoftwareApplication",
-          "@id": "https://getmori.vercel.app/#software",
-          "name": "Mori",
-          "operatingSystem": "Android, iOS, Windows, macOS, Linux",
-          "applicationCategory": "MultimediaApplication",
-          "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "USD"
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://getmori.vercel.app/#website",
+            "url": "https://getmori.vercel.app/",
+            "name": "Mori",
+            "description": "Free, private downloader for videos, photos, and music from 14 platforms.",
+            "inLanguage": "en-US"
           },
-          "downloadUrl": "https://github.com/coflyn/Mori/releases",
-          "softwareVersion": "4.3.3",
-          "license": "https://www.gnu.org/licenses/gpl-3.0.html",
-          "author": {
-            "@type": "Person",
-            "name": "coflyn",
-            "url": "https://github.com/coflyn"
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://getmori.vercel.app/#software",
+            "name": "Mori",
+            "operatingSystem": "Android, iOS, Windows, macOS, Linux",
+            "applicationCategory": "MultimediaApplication",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "downloadUrl": "https://github.com/coflyn/Mori/releases",
+            "softwareVersion": "4.3.3",
+            "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+            "author": {
+              "@type": "Person",
+              "name": "coflyn",
+              "url": "https://github.com/coflyn"
+            },
+            "description": "Mori is a free, private downloader for videos, photos, and music from 14 platforms. No ads, no accounts. Runs entirely on your device."
           },
-          "description": "Mori is a free, private downloader for videos, photos, and music from 14 platforms. No ads, no accounts. Runs entirely on your device."
-        },
-        {
-          "@type": "FAQPage",
-          "@id": "https://getmori.vercel.app/#faq",
-          "mainEntity": [
-            {
-              "@type": "Question",
-              "name": "Is Mori really free? What is the catch?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "There is no catch. Mori is free, open source (GPL-3.0), and runs entirely on your device. No ads, no analytics, no subscription."
+          {
+            "@type": "FAQPage",
+            "@id": "https://getmori.vercel.app/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Is Mori really free? What is the catch?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "There is no catch. Mori is free, open source (GPL-3.0), and runs entirely on your device. No ads, no analytics, no subscription."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Does it keep working when a platform updates and breaks scrapers?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Mori uses OTA (Over-The-Air) hot-patching to push scraper updates in the background without requiring you to reinstall the app. When a platform changes its API, the fix arrives silently."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Where do downloaded files go?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Files go to standard system folders (Movies/Mori, Music/Mori, Pictures/Mori) by default. You can pick any custom folder, including SD cards, from Settings."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How do I install on iOS?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Mori for iOS ships as a .ipa file and requires sideloading via AltStore or TrollStore. It is not available on the App Store."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I build it from source?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Full build instructions for all platforms are in CONTRIBUTING.md on GitHub. The app is built with Vanilla JS, Tauri v2 for desktop, and Capacitor for Android and iOS."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What if a platform or website owner wants their service removed?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "If you represent a platform or website and would like your service removed, modified, or have concerns regarding scraping, please open an issue on the Mori GitHub repository. Requests are reviewed and handled promptly."
+                }
               }
-            },
-            {
-              "@type": "Question",
-              "name": "Does it keep working when a platform updates and breaks scrapers?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Yes. Mori uses OTA (Over-The-Air) hot-patching to push scraper updates in the background without requiring you to reinstall the app. When a platform changes its API, the fix arrives silently."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Where do downloaded files go?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Files go to standard system folders (Movies/Mori, Music/Mori, Pictures/Mori) by default. You can pick any custom folder, including SD cards, from Settings."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "How do I install on iOS?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Mori for iOS ships as a .ipa file and requires sideloading via AltStore or TrollStore. It is not available on the App Store."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Can I build it from source?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Yes. Full build instructions for all platforms are in CONTRIBUTING.md on GitHub. The app is built with Vanilla JS, Tauri v2 for desktop, and Capacitor for Android and iOS."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "What if a platform or website owner wants their service removed?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "If you represent a platform or website and would like your service removed, modified, or have concerns regarding scraping, please open an issue on the Mori GitHub repository. Requests are reviewed and handled promptly."
-              }
-            }
-          ]
-        }
-      ]
-    }
+            ]
+          }
+        ]
+      }
     </script>
 
     <!-- Vercel Web Analytics -->
     <script>
-      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+      window.va =
+        window.va ||
+        function () {
+          (window.vaq = window.vaq || []).push(arguments);
+        };
     </script>
     <script defer src="/_vercel/insights/script.js"></script>
   </head>
@@ -283,6 +296,7 @@
             <a
               href="https://github.com/coflyn/Mori/releases"
               class="btn btn-primary btn-large"
+              id="hero-download-btn"
               target="_blank"
               rel="noopener"
               >Download free</a
@@ -291,8 +305,12 @@
               >See how it works</a
             >
           </div>
-          <p class="hero-platforms-hint">
-            Android &middot; iOS &middot; macOS &middot; Windows
+          <p class="hero-platforms-hint" id="hero-platforms-hint">
+            <span>Android &middot; iOS &middot; macOS &middot; Windows</span>
+            <span class="hero-hint-sep" aria-hidden="true">&bull;</span>
+            <a href="#download" class="hero-all-platforms"
+              >All formats &darr;</a
+            >
           </p>
         </div>
         <div class="hero-visual" aria-hidden="true">
@@ -333,9 +351,7 @@
               </ul>
             </div>
             <div class="compare-card compare-card--good">
-              <span class="compare-badge compare-badge--good"
-                >Mori application</span
-              >
+              <span class="compare-badge compare-badge--good">Mori</span>
               <ul class="compare-list" role="list">
                 <li>100% ad-free, zero tracking, open source under GPL-3.0</li>
                 <li>Runs entirely on your device with native speed</li>
@@ -887,19 +903,35 @@
             </div>
 
             <div class="carousel-meta">
-              <div class="carousel-caption" id="carousel-caption" aria-live="polite">
+              <div
+                class="carousel-caption"
+                id="carousel-caption"
+                aria-live="polite"
+              >
                 <span class="carousel-badge" id="carousel-badge">01 / 06</span>
                 <h3 class="carousel-title" id="carousel-title">Home Screen</h3>
-                <p class="carousel-desc" id="carousel-desc">Clean link input with automatic clipboard detection and supported platform shortcuts.</p>
+                <p class="carousel-desc" id="carousel-desc">
+                  Clean link input with automatic clipboard detection and
+                  supported platform shortcuts.
+                </p>
               </div>
 
-              <div class="carousel-dots" id="carousel-dots" role="tablist" aria-label="Screenshots pagination"></div>
+              <div
+                class="carousel-dots"
+                id="carousel-dots"
+                role="tablist"
+                aria-label="Screenshots pagination"
+              ></div>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="section-download" aria-labelledby="download-heading">
+      <section
+        id="download"
+        class="section-download"
+        aria-labelledby="download-heading"
+      >
         <div class="container">
           <h2 id="download-heading">Download Mori</h2>
           <p class="download-sub">
@@ -926,7 +958,9 @@
                   <span class="dl-platform">Android</span>
                   <span class="dl-badge">APK</span>
                 </div>
-                <span class="dl-file" data-dl-file="android">Mori v4.3.3.apk</span>
+                <span class="dl-file" data-dl-file="android"
+                  >Mori v4.3.3.apk</span
+                >
               </div>
               <div class="dl-arrow" aria-hidden="true">
                 <svg
@@ -965,7 +999,9 @@
                   <span class="dl-platform">macOS</span>
                   <span class="dl-badge">arm64 .dmg</span>
                 </div>
-                <span class="dl-file" data-dl-file="macos">Mori-v4.3.3-macOS-arm64.dmg</span>
+                <span class="dl-file" data-dl-file="macos"
+                  >Mori-v4.3.3-macOS-arm64.dmg</span
+                >
               </div>
               <div class="dl-arrow" aria-hidden="true">
                 <svg
@@ -1004,7 +1040,9 @@
                   <span class="dl-platform">Windows</span>
                   <span class="dl-badge">x64 Setup</span>
                 </div>
-                <span class="dl-file" data-dl-file="windows">Mori-v4.3.3-Windows-x64-Setup.exe</span>
+                <span class="dl-file" data-dl-file="windows"
+                  >Mori-v4.3.3-Windows-x64-Setup.exe</span
+                >
               </div>
               <div class="dl-arrow" aria-hidden="true">
                 <svg
@@ -1202,10 +1240,10 @@
               >
                 <div class="faq-answer-inner">
                   <p>
-                    Yes. Mori uses OTA (Over-The-Air) hot-patching to push scraper
-                    updates in the background without requiring you to reinstall
-                    the app. When a platform changes its API, the fix arrives
-                    silently.
+                    Yes. Mori uses OTA (Over-The-Air) hot-patching to push
+                    scraper updates in the background without requiring you to
+                    reinstall the app. When a platform changes its API, the fix
+                    arrives silently.
                   </p>
                 </div>
               </dd>
@@ -1240,10 +1278,10 @@
               >
                 <div class="faq-answer-inner">
                   <p>
-                    Files go to standard system folders (Movies/Mori, Music/Mori,
-                    Pictures/Mori) by default. You can pick any custom folder,
-                    including SD cards, from Settings. Files only appear in your
-                    gallery once the download is 100% complete.
+                    Files go to standard system folders (Movies/Mori,
+                    Music/Mori, Pictures/Mori) by default. You can pick any
+                    custom folder, including SD cards, from Settings. Files only
+                    appear in your gallery once the download is 100% complete.
                   </p>
                 </div>
               </dd>
@@ -1278,9 +1316,9 @@
               >
                 <div class="faq-answer-inner">
                   <p>
-                    Mori for iOS ships as a .ipa file and requires sideloading via
-                    AltStore or TrollStore. It is not available on the App Store.
-                    The
+                    Mori for iOS ships as a .ipa file and requires sideloading
+                    via AltStore or TrollStore. It is not available on the App
+                    Store. The
                     <a
                       href="https://github.com/coflyn/Mori/blob/main/GUIDE.md"
                       target="_blank"
@@ -1328,8 +1366,8 @@
                       target="_blank"
                       rel="noopener"
                       >CONTRIBUTING.md</a
-                    >. The app is built with Vanilla JS, Tauri v2 for desktop, and
-                    Capacitor for Android and iOS.
+                    >. The app is built with Vanilla JS, Tauri v2 for desktop,
+                    and Capacitor for Android and iOS.
                   </p>
                 </div>
               </dd>
@@ -1342,7 +1380,8 @@
                   aria-controls="faq-6"
                   id="faq-btn-6"
                 >
-                  What if a platform or website owner wants their service removed?<svg
+                  What if a platform or website owner wants their service
+                  removed?<svg
                     class="faq-chevron"
                     viewBox="0 0 24 24"
                     fill="none"
@@ -1402,8 +1441,13 @@
     <footer class="site-footer" role="contentinfo">
       <div class="container footer-inner">
         <div class="footer-brand">
-          <img src="assets/logo.png" alt="Mori" width="30" height="30" />
-          <span>Mori</span>
+          <a href="#top" class="footer-logo" aria-label="Mori home">
+            <img src="assets/logo.png" alt="Mori" width="28" height="28" />
+            <span>Mori</span>
+          </a>
+          <p class="footer-tagline">
+            Save anything from anywhere &middot; Free &amp; private
+          </p>
         </div>
         <nav class="footer-links" aria-label="Footer navigation">
           <a
@@ -1439,6 +1483,34 @@
         </nav>
       </div>
     </footer>
+
+    <!-- Floating Mobile Quick-Download Button -->
+    <aside class="floating-dl" id="floating-dl" aria-hidden="true">
+      <a
+        href="https://github.com/coflyn/Mori/releases"
+        class="btn-floating-dl"
+        id="floating-dl-btn"
+        target="_blank"
+        rel="noopener"
+        aria-label="Download Mori"
+      >
+        <svg
+          class="floating-dl-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        <span id="floating-dl-text">Download</span>
+      </a>
+    </aside>
 
     <script src="js/main.js"></script>
   </body>

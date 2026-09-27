@@ -173,13 +173,19 @@ export function renderMediaSlides(container, items, resultThumbnail) {
               const blobUrl = URL.createObjectURL(blob);
               audio.src = blobUrl;
               audio.load();
-              if (autoPlaySetting && (index === 0 || slide.classList.contains("active"))) {
+              if (
+                autoPlaySetting &&
+                (index === 0 || slide.classList.contains("active"))
+              ) {
                 audio.play().catch(() => {});
               }
             } else if (dl.remoteUrl && navigator.onLine) {
               audio.src = dl.remoteUrl;
               audio.load();
-              if (autoPlaySetting && (index === 0 || slide.classList.contains("active"))) {
+              if (
+                autoPlaySetting &&
+                (index === 0 || slide.classList.contains("active"))
+              ) {
                 audio.play().catch(() => {});
               }
             } else {
@@ -192,7 +198,10 @@ export function renderMediaSlides(container, items, resultThumbnail) {
             if (dl.remoteUrl && navigator.onLine) {
               audio.src = dl.remoteUrl;
               audio.load();
-              if (autoPlaySetting && (index === 0 || slide.classList.contains("active"))) {
+              if (
+                autoPlaySetting &&
+                (index === 0 || slide.classList.contains("active"))
+              ) {
                 audio.play().catch(() => {});
               }
             } else {
@@ -272,7 +281,10 @@ export function renderMediaSlides(container, items, resultThumbnail) {
               const blob = new Blob([byteArr], { type: "audio/mp3" });
               audio.src = URL.createObjectURL(blob);
               audio.load();
-              if (autoPlaySetting && (index === 0 || slide.classList.contains("active"))) {
+              if (
+                autoPlaySetting &&
+                (index === 0 || slide.classList.contains("active"))
+              ) {
                 audio.play().catch(() => {});
               }
               return;
@@ -497,7 +509,10 @@ export function updateSliderUI() {
     const playerContainer = slide.querySelector(".mori-player-container");
     if (index === currentSlideIndex) {
       slide.classList.add("active");
-      if (playerContainer && typeof playerContainer._tryAutoPlay === "function") {
+      if (
+        playerContainer &&
+        typeof playerContainer._tryAutoPlay === "function"
+      ) {
         playerContainer._tryAutoPlay();
       } else if (media) {
         media.loop = localStorage.getItem("mori_loop") !== "false";
@@ -508,11 +523,15 @@ export function updateSliderUI() {
               playPromise.catch((err) => {
                 if (
                   err &&
-                  (err.name === "NotAllowedError" || err.name === "AbortError") &&
+                  (err.name === "NotAllowedError" ||
+                    err.name === "AbortError") &&
                   !media.muted &&
                   media.tagName === "VIDEO"
                 ) {
-                  console.warn("Unmuted autoplay restricted, attempting muted:", err);
+                  console.warn(
+                    "Unmuted autoplay restricted, attempting muted:",
+                    err,
+                  );
                   media.muted = true;
                   const pc = media.closest(".mori-player-container");
                   if (pc) {
@@ -780,10 +799,7 @@ export function renderResult(result, originalUrl) {
         translations[currentLang]["btn-download-all-title"] || "Download All";
       const rawCountText =
         translations[currentLang]["label-items-count"] || "${count} Items";
-      countText = rawCountText.replace(
-        "${count}",
-        result.downloads.length,
-      );
+      countText = rawCountText.replace("${count}", result.downloads.length);
 
       allBtn.innerHTML = `
         <div class="dl-all-left">
@@ -811,10 +827,6 @@ export function renderResult(result, originalUrl) {
         window._moriDownloadCancelled = false;
         window._moriPlaylistDownloading = true;
         allBtn.disabled = false; // keep enabled to act as Cancel
-
-        // Clean up any lingering download progress toast before playlist begins
-        const existingToasts = document.querySelectorAll(".download-progress-toast");
-        existingToasts.forEach((el) => el.remove());
 
         // Keep screen awake throughout playlist download
         await requestWakeLock(true);
@@ -851,92 +863,107 @@ export function renderResult(result, originalUrl) {
           } catch (_) {}
         }
 
+        const concurrentSetting =
+          parseInt(localStorage.getItem("mori_concurrent") || "1", 10) || 1;
+        // Honor full concurrent limit up to 5 without capping audio/playlist to 3
+        const concurrentLimit = Math.max(1, Math.min(5, concurrentSetting));
+
+        let completedCount = 0;
+
         try {
-          for (let step = 0; step < indicesToProcess.length; step++) {
+          for (
+            let step = 0;
+            step < indicesToProcess.length;
+            step += concurrentLimit
+          ) {
             if (playlistCancelled) break;
 
-            const i = indicesToProcess[step];
-            const item = result.downloads[i];
-            const currNum = step + 1;
+            const chunk = indicesToProcess.slice(step, step + concurrentLimit);
+            let hasChunkError = false;
 
-            if (titleSpan) {
-              titleSpan.textContent = `${progressStr} ${currNum}/${indicesToProcess.length}`;
-            }
+            await Promise.all(
+              chunk.map(async (i) => {
+                if (playlistCancelled) return;
 
-            // Target item button in UI if available
-            const itemBtns = downloadList.querySelectorAll(
-              ".dl-item:not(.dl-all-btn)",
-            );
-            const targetBtn = itemBtns[i] || null;
-
-            const cleanLabel = (item.type || "")
-              .replace(/\s*\[(MP3|MP4|JPG|PNG|WEBP)\]/gi, "")
-              .trim();
-
-            if (window.MoriMainBridge?.startDownloadService) {
-              try {
-                window.MoriMainBridge.startDownloadService(
-                  `Downloading (${currNum}/${indicesToProcess.length}): ${cleanLabel || result.title}`,
+                const item = result.downloads[i];
+                const itemBtns = downloadList.querySelectorAll(
+                  ".dl-item:not(.dl-all-btn)",
                 );
-              } catch (_) {}
-            }
+                const targetBtn = itemBtns[i] || null;
 
-            let dlResult = null;
-            try {
-              let trackTitle = result.title;
-              if (isMultiPhoto && photoDownloads.includes(item)) {
-                trackTitle = `${result.title}_${photoDownloads.indexOf(item) + 1}`;
-              }
-              dlResult = await startNativeDownload(
-                item.url,
-                item.type,
-                trackTitle,
-                targetBtn,
-                result.sourceUrl || originalUrl,
-                false, // don't reset cancel flag between tracks
-              );
-            } catch (err) {
-              console.error("Batch download track error:", err);
-              dlResult = { success: false, error: err?.message };
-            }
+                const cleanLabel = (item.type || "")
+                  .replace(/\s*\[(MP3|MP4|JPG|PNG|WEBP)\]/gi, "")
+                  .trim();
+
+                let dlResult = null;
+                try {
+                  let trackTitle = result.title;
+                  const isTrack = /^\d+\.\s+/.test(cleanLabel);
+                  if (isTrack) {
+                    trackTitle = cleanLabel.replace(/^\d+\.\s+/, "");
+                  } else if (isMultiPhoto && photoDownloads.includes(item)) {
+                    trackTitle = `${result.title}_${photoDownloads.indexOf(item) + 1}`;
+                  }
+                  dlResult = await startNativeDownload(
+                    item.url,
+                    item.type,
+                    trackTitle,
+                    targetBtn,
+                    result.sourceUrl || originalUrl,
+                    false, // don't reset cancel flag between tracks
+                  );
+                } catch (err) {
+                  console.error("Download track error:", err);
+                  dlResult = { success: false, error: err?.message };
+                }
+
+                completedCount++;
+                if (titleSpan) {
+                  titleSpan.textContent = `${progressStr} ${completedCount}/${indicesToProcess.length}`;
+                }
+
+                if (window.MoriMainBridge?.startDownloadService) {
+                  try {
+                    window.MoriMainBridge.startDownloadService(
+                      `Downloading (${completedCount}/${indicesToProcess.length}): ${cleanLabel || result.title}`,
+                    );
+                  } catch (_) {}
+                }
+
+                if (dlResult && dlResult.success) {
+                  if (targetBtn) {
+                    const b = targetBtn.querySelector(".dl-badge");
+                    if (b) {
+                      b.textContent = t("status-saved");
+                      b.style.backgroundColor = "";
+                      b.style.color = "";
+                    }
+                  }
+                } else if (!playlistCancelled) {
+                  hasChunkError = true;
+                  currentFailedIndices.push(i);
+                  if (targetBtn) {
+                    const b = targetBtn.querySelector(".dl-badge");
+                    if (b) {
+                      b.textContent = t("status-failed");
+                      b.style.backgroundColor = "var(--color-danger, #ef4444)";
+                      b.style.color = "#ffffff";
+                    }
+                  }
+                }
+              }),
+            );
 
             if (playlistCancelled) break;
 
-            if (dlResult && dlResult.success) {
-              if (targetBtn) {
-                const b = targetBtn.querySelector(".dl-badge");
-                if (b) {
-                  b.textContent = t("status-saved");
-                  b.style.backgroundColor = "";
-                  b.style.color = "";
-                }
-              }
-            } else {
-              currentFailedIndices.push(i);
-              if (targetBtn) {
-                const b = targetBtn.querySelector(".dl-badge");
-                if (b) {
-                  b.textContent = t("status-failed");
-                  b.style.backgroundColor = "var(--color-danger, #ef4444)";
-                  b.style.color = "#ffffff";
-                }
-              }
+            if (step + concurrentLimit < indicesToProcess.length) {
+              const delayMs = isMultiPhoto ? 300 : hasChunkError ? 2000 : 1000;
+              await new Promise((r) => setTimeout(r, delayMs));
             }
-
-            if (playlistCancelled) break;
-
-            // Smart delay between tracks: 1200ms normal, 2500ms on error to prevent rate limiting
-            const delayMs = dlResult && dlResult.success ? 1200 : 2500;
-            await new Promise((r) => setTimeout(r, delayMs));
           }
         } finally {
           window._moriPlaylistDownloading = false;
           releaseWakeLock();
-          // Clean up any uncompleted progress toast so nothing is left stuck on screen
-          const lingeringToasts = document.querySelectorAll(
-            ".download-progress-toast:not(.completed)",
-          );
-          lingeringToasts.forEach((el) => el.remove());
 
           if (window.MoriMainBridge?.stopDownloadService) {
             try {
@@ -1043,7 +1070,9 @@ export function renderResult(result, originalUrl) {
 
       btn.addEventListener("click", async (e) => {
         let itemTitle = result.title;
-        if (isMultiPhoto && photoDownloads.includes(dl)) {
+        if (isTrackItem) {
+          itemTitle = cleanType.replace(/^\d+\.\s+/, "");
+        } else if (isMultiPhoto && photoDownloads.includes(dl)) {
           itemTitle = `${result.title}_${photoDownloads.indexOf(dl) + 1}`;
         }
         const res = await startNativeDownload(

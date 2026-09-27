@@ -623,6 +623,10 @@ input[type="text"]:focus {
   text-transform: none;
   line-height: 1.35;
   color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .dl-item .dl-badge {

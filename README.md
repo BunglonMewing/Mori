@@ -3,6 +3,7 @@
 </p>
 
 <h1 align="center">Mori</h1>
+<p style="font-style:italic; font-weight:bold;" align="center">Save anything, From anywhere.</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Version-v4.3.3-brown?style=flat-square" alt="Version">
@@ -15,7 +16,7 @@
 
 <div align="center">
 
-Mori is a free, fast, and private downloader for saving videos, photos, and music from 14 popular social media platforms. No ads, no tracking, and no external servers, everything runs directly on your device.
+Videos, photos, and music from 14 platforms. No watermarks. No accounts. No tracking. Everything stays on your device.
 
 <a href="https://sociabuzz.com/coflyn/tribe" target="_blank">
   <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60" />
@@ -79,6 +80,8 @@ Pre-compiled, ready-to-use packages are available for all devices on **[GitHub R
 - **Over-The-Air (OTA) Scraper Hot-Patching**: Never wait for app updates when a platform changes its API. Mori seamlessly hot-patches scraper engines in the background without needing to reinstall the app.
 - **Custom Directory & Storage Freedom**: Pick any folder across your device storage (including SD cards, Movies, Downloads, and custom folders) with native folder pickers and full file management support.
 - **One-Tap Playlists & Albums**: Download full music albums or playlists from **Spotify**, **Apple Music**, and **YouTube** in one click instead of saving songs one by one.
+- **High-Speed Concurrent Downloads**: Download music albums, playlists, and multi-photo galleries in parallel with up to 5 concurrent worker threads for blazing fast speeds.
+- **Floating Download Bubble & Manager**: Non-intrusive monochrome floating bubble tracking active tasks in real-time with an aggregated progress ring, expandable dropup tray, individual task progress bars, and instant cancellation.
 - **Quick Save via Android Share Menu**: Spot a video you love? Tap **Share** in any app and select Mori to download it instantly in a neat overlay without switching apps.
 - **Multi-Link Batch Mode**: Paste several links at once and let Mori queue and download them all automatically in the background.
 - **Built-in Media Player & Preview**: Play videos, stream tracks, and browse photo carousels right inside the app before or after downloading.
@@ -154,7 +157,7 @@ Mori/
 │   ├── css/                    # Modular CSS architecture
 │   │   ├── variables.css       # Design tokens, themes (dark/light), typography, glass, corner presets
 │   │   ├── base.css            # CSS reset, typography, header, dynamic greeting, bottom navigation
-│   │   ├── components.css      # Reusable buttons, custom toast, floating download progress toast
+│   │   ├── components.css      # Reusable buttons, custom toast, floating download bubble & dropup manager
 │   │   ├── home.css            # URL input bar, batch textarea, skeleton loader, media preview cards
 │   │   ├── history.css         # History layout, summary stats card, cards, actions bar, thumbnail overlay
 │   │   ├── settings.css        # Settings menu list, sub-page slide transitions, custom dropdowns
@@ -198,6 +201,7 @@ Mori/
 │   │   │   ├── httpHelper.js   # Unified HTTP engine (native OkHttp/Tauri bridge + UA rotation)
 │   │   │   └── index.js        # Dynamic handshake runtime loader & decryptor for scrapers.bin
 │   │   ├── ui/                 # UI rendering & presentation layer
+│   │   │   ├── downloadBubble.js # Persistent floating download bubble & dropup task manager
 │   │   │   ├── nativeDownload.js # Native download flow orchestrator & progress tracking
 │   │   │   ├── result.js       # Analysis results view, media slider, & PDF creator
 │   │   │   └── resultModal.js  # Detailed preview modal & folder path navigator
@@ -207,7 +211,7 @@ Mori/
 │   │   │   ├── plugins.js      # Capacitor native plugin registry & auto-sync lifecycle
 │   │   │   ├── http.js         # User-Agent presets, cookie parser, query serializer, error handler
 │   │   │   ├── device.js       # Haptic feedback triggers, clipboard writer, wake lock, Wi-Fi guard
-│   │   │   ├── toast.js        # Standard app toast & floating download progress toast lifecycle
+│   │   │   ├── toast.js        # Standard notification toasts & action feedback alerts
 │   │   │   ├── sound.js        # Web Audio API procedural synthesizer & sound pack generator
 │   │   │   ├── media.js        # Video canvas thumbnail generator & playback safe controls
 │   │   │   ├── pdfHelper.js    # PDF generation & image bundling via pdf-lib

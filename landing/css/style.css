@@ -706,14 +706,16 @@ h1 {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(26, 24, 20, 0.06);
 }
-.platform-item img {
+.platform-item img,
+.platform-item svg {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
   display: block;
   opacity: 0.85;
 }
-.platform-item:hover img {
+.platform-item:hover img,
+.platform-item:hover svg {
   opacity: 1;
 }
 
@@ -951,6 +953,9 @@ h1 {
 .carousel-dots {
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 320px;
   gap: 8px;
 }
 

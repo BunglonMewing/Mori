@@ -58,6 +58,7 @@ import "./modules/modals.js";
 import "./modules/update.js";
 import "./modules/intents.js";
 import "./modules/download.js";
+import "./ui/downloadBubble.js";
 import { initBgAnimation } from "./modules/bgAnimation.js";
 
 initBgAnimation();

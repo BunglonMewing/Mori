@@ -319,6 +319,9 @@ export function switchLanguage(lang) {
   updateLanguageUI();
   updateGreeting();
   renderHistory(onHistoryItemClick, onHistoryDeleteClick);
+  window.dispatchEvent(
+    new CustomEvent("mori_language_changed", { detail: { lang } }),
+  );
 
   let msg = "Language updated";
   if (currentLang === "id") msg = "Bahasa diperbarui";

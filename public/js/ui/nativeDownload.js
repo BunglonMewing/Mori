@@ -1,12 +1,7 @@
-// nativeDownload.js — native download orchestrator with progress toast
 import { translations, t } from "../i18n/index.js";
 import {
   showToast,
   Filesystem,
-  showDownloadProgressToast,
-  updateDownloadProgressToast,
-  failDownloadProgressToast,
-  cancelDownloadProgressToast,
   requestWakeLock,
   releaseWakeLock,
   checkWifiOnlyGuard,
@@ -24,6 +19,7 @@ import { cleanDownloadUrl, buildDownloadHeaders } from "../downloader/headers.js
 import { needsAsyncResolving, resolveDownloadUrl } from "../downloader/resolver.js";
 import { saveToStorage } from "../downloader/storage.js";
 import { handlePostDownload } from "../downloader/postProcess.js";
+import { downloadBubble } from "./downloadBubble.js";
 
 export function cancelCurrentDownload() {
   window._moriDownloadCancelled = true;
@@ -31,16 +27,10 @@ export function cancelCurrentDownload() {
   window.dispatchEvent(new CustomEvent("mori_download_cancelled"));
 }
 
-// Expose globally so the progress toast cancel button can call it
+// Expose globally so cancellation can be called from anywhere
 window._moriCancelDownload = cancelCurrentDownload;
 
 function handleCancelCleanup(btn, originalContent, progressContainer) {
-  if (!window._moriPlaylistDownloading) {
-    cancelDownloadProgressToast();
-  } else {
-    const lingering = document.querySelectorAll(".download-progress-toast");
-    lingering.forEach((el) => el.remove());
-  }
   if (btn) {
     btn.disabled = false;
     btn.innerHTML = originalContent;
@@ -151,10 +141,26 @@ export async function startNativeDownload(
     window._moriActiveSimInterval = null;
   }
 
+  window._moriActiveDownloadsCount =
+    (window._moriActiveDownloadsCount || 0) + 1;
+
   const hideProgress = localStorage.getItem("mori_hide_progress") === "true";
-  if (!hideProgress) {
-    showDownloadProgressToast(platformLabel, type);
-  }
+  const isMultiDownload =
+    window._moriPlaylistDownloading || window._moriActiveDownloadsCount > 1;
+
+  let effectiveTitle = title || "Mori Media";
+  const dlId = `dl_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  let itemCancelled = false;
+
+  downloadBubble.addDownload({
+    id: dlId,
+    title: effectiveTitle,
+    platform: platformLabel,
+    type: type,
+    onCancel: () => {
+      itemCancelled = true;
+    },
+  });
 
   let currentProgressVal = 0;
   const updateProgress = (pct, statusText) => {
@@ -168,10 +174,8 @@ export async function startNativeDownload(
       currentProgressVal = targetPct;
     }
     if (progressBar) progressBar.style.width = `${currentProgressVal}%`;
-    updateDownloadProgressToast(currentProgressVal, statusText);
+    downloadBubble.updateProgress(dlId, currentProgressVal, statusText);
   };
-
-  let effectiveTitle = title || "Mori Media";
 
   try {
     if (btn) btn.disabled = true;
@@ -336,9 +340,11 @@ export async function startNativeDownload(
       fileName = uniqueRes.fileName;
     }
 
-    const checkCancelled = () => Boolean(window._moriDownloadCancelled);
+    const checkCancelled = () =>
+      Boolean(window._moriDownloadCancelled || itemCancelled);
 
     if (checkCancelled()) {
+      downloadBubble.cancelDownload(dlId);
       handleCancelCleanup(btn, originalContent, progressContainer);
       return { success: false, error: "Cancelled" };
     }
@@ -352,6 +358,7 @@ export async function startNativeDownload(
         checkCancelled,
       });
       if (resolveRes.cancelled || checkCancelled()) {
+        downloadBubble.cancelDownload(dlId);
         handleCancelCleanup(btn, originalContent, progressContainer);
         return { success: false, error: "Cancelled" };
       }
@@ -376,6 +383,7 @@ export async function startNativeDownload(
     });
 
     if (cancelled || checkCancelled()) {
+      downloadBubble.cancelDownload(dlId);
       handleCancelCleanup(btn, originalContent, progressContainer);
       return { success: false, error: "Cancelled" };
     }
@@ -397,7 +405,7 @@ export async function startNativeDownload(
       }
     }
 
-    return await handlePostDownload({
+    const postRes = await handlePostDownload({
       savedFile,
       successfulDir,
       sourceUrl,
@@ -409,6 +417,8 @@ export async function startNativeDownload(
       originalContent,
       progressContainer,
     });
+    downloadBubble.completeDownload(dlId, "Saved");
+    return postRes;
   } catch (err) {
     console.error("Download failed", err);
     if (window._moriActiveSimInterval) {
@@ -427,8 +437,7 @@ export async function startNativeDownload(
         "Network connection error";
     }
 
-    const failDismissMs = window._moriPlaylistDownloading ? 2000 : 3500;
-    failDownloadProgressToast(errorMsg, failDismissMs);
+    downloadBubble.failDownload(dlId, errorMsg);
 
     // Trigger System Tray Notification when download fails
     if (
@@ -468,6 +477,10 @@ export async function startNativeDownload(
       error: errorMsg,
     };
   } finally {
+    window._moriActiveDownloadsCount = Math.max(
+      0,
+      (window._moriActiveDownloadsCount || 1) - 1,
+    );
     window._moriActiveDownloadUrl = null;
     window.dispatchEvent(new CustomEvent("mori_download_ended"));
     if (!window._moriPlaylistDownloading) {

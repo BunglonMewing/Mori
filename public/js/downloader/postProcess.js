@@ -4,7 +4,6 @@ import {
   triggerHaptic,
   playCompletionSound,
   autoClearInputBox,
-  completeDownloadProgressToast,
 } from "../utils/index.js";
 import { translations } from "../i18n/index.js";
 import { currentLang } from "../modules/core.js";
@@ -69,16 +68,7 @@ export async function handlePostDownload({
     } catch (_) {}
   }
 
-  const completeTitle =
-    translations[currentLang]?.["toast-download-complete"] ||
-    "Download Complete";
-  const dismissMs = window._moriPlaylistDownloading ? 1200 : 3000;
   const displayFolder = targetFolder.startsWith("/") ? targetFolder : `/${targetFolder}`;
-  completeDownloadProgressToast(
-    completeTitle,
-    displayFolder,
-    dismissMs,
-  );
 
   if (
     !window._moriPlaylistDownloading &&

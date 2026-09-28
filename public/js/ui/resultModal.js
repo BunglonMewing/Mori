@@ -276,7 +276,7 @@ export async function showModal(item, onRedownload) {
             const isImg = mediaType === "IMAGE";
             displayItems.push({
               url: localUrl,
-              remoteUrl: dl.url || dl.src,
+              remoteUrl: null,
               rawPath: dl.localPath || dl.path || localUrl,
               rawUri: dl.localUri || dl.uri || localUrl,
               type: mediaType,

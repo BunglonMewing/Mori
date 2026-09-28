@@ -116,12 +116,11 @@ export function renderHistory(onItemClick, onDeleteClick) {
         !t.startsWith("/") &&
         !t.startsWith("file://");
 
+      const hasLocalFiles =
+        (item.localFiles && item.localFiles.length > 0) || !!item.localUri;
+
       if (isValidThumb(item.localThumbnail)) {
         thumbSrc = item.localThumbnail;
-      } else if (isValidThumb(item.thumbnail)) {
-        thumbSrc = item.thumbnail;
-      } else if (item.localFiles && item.localFiles.length > 0 && isValidThumb(item.localFiles[0].thumbnail)) {
-        thumbSrc = item.localFiles[0].thumbnail;
       } else if (item.localFiles && item.localFiles.length > 0) {
         const first = item.localFiles[0];
         const isImg =
@@ -131,11 +130,17 @@ export function renderHistory(onItemClick, onDeleteClick) {
           thumbSrc = first.thumbnail;
         } else if (isImg) {
           thumbSrc = first.uri || first.path;
+        } else if (isValidThumb(item.thumbnail) && navigator.onLine) {
+          thumbSrc = item.thumbnail;
         }
       } else if (item.localUri) {
         if (/\.(jpe?g|png|webp|gif|bmp)$/i.test(item.localUri)) {
           thumbSrc = item.localUri;
+        } else if (isValidThumb(item.thumbnail) && navigator.onLine) {
+          thumbSrc = item.thumbnail;
         }
+      } else if (isValidThumb(item.thumbnail)) {
+        thumbSrc = item.thumbnail;
       }
 
       if (

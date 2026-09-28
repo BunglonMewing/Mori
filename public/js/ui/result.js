@@ -179,7 +179,7 @@ export function renderMediaSlides(container, items, resultThumbnail) {
               ) {
                 audio.play().catch(() => {});
               }
-            } else if (dl.remoteUrl && navigator.onLine) {
+            } else if (!isLocal && dl.remoteUrl && navigator.onLine) {
               audio.src = dl.remoteUrl;
               audio.load();
               if (
@@ -195,7 +195,7 @@ export function renderMediaSlides(container, items, resultThumbnail) {
           .catch((e) => {
             if (audio._isStopped || !audio.isConnected) return;
             console.warn("Tauri audio read error:", e);
-            if (dl.remoteUrl && navigator.onLine) {
+            if (!isLocal && dl.remoteUrl && navigator.onLine) {
               audio.src = dl.remoteUrl;
               audio.load();
               if (
@@ -295,6 +295,7 @@ export function renderMediaSlides(container, items, resultThumbnail) {
         }
 
         if (
+          !isLocal &&
           !audioRemoteRetried &&
           dl.remoteUrl &&
           audio.src !== dl.remoteUrl &&

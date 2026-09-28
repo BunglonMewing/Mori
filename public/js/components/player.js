@@ -373,7 +373,8 @@ export function createVideoPlayer(dl, index, resultThumbnail) {
       posterThumb.includes("placeholder") ||
       posterThumb.includes("images/") ||
       isIndownPoster ||
-      (!navigator.onLine && !isLocalPoster))
+      (!navigator.onLine && !isLocalPoster) ||
+      (isLocal && !isLocalPoster))
   ) {
     posterThumb = "";
   }
@@ -519,6 +520,7 @@ export function createVideoPlayer(dl, index, resultThumbnail) {
     }
 
     if (
+      !isLocal &&
       !isRetryingRemote &&
       dl.remoteUrl &&
       video.src !== dl.remoteUrl &&

@@ -36,6 +36,8 @@ import {
   scrapeThreads,
   scrapeBandcamp,
   scrapePixiv,
+  scrapeReddit,
+  scrapeTeraBox,
 } from "../scrapers/index.js";
 import {
   decodeHtmlEntities,
@@ -697,7 +699,7 @@ downloadBtn.addEventListener("click", async () => {
       }
     } else if (
       url.includes("twitter.com") ||
-      url.includes("x.com") ||
+      /(?:^|[/.])x\.com(?:[/?#:]|$)/i.test(url) ||
       url.includes("fixupx.com") ||
       url.includes("fxtwitter.com") ||
       url.includes("vxtwitter.com")
@@ -807,6 +809,18 @@ downloadBtn.addEventListener("click", async () => {
       data = await scrapeBandcamp(url);
     } else if (url.includes("pixiv.net")) {
       data = await scrapePixiv(url);
+    } else if (url.includes("reddit.com") || url.includes("redd.it")) {
+      data = await scrapeReddit(url);
+    } else if (
+      url.includes("terabox") ||
+      url.includes("1024tera") ||
+      url.includes("nephobox") ||
+      url.includes("4funbox") ||
+      url.includes("mirrobox") ||
+      url.includes("momerybox") ||
+      url.includes("tibibox")
+    ) {
+      data = await scrapeTeraBox(url);
     } else {
       data = { status: false, message: "URL not supported yet." };
     }

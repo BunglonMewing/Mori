@@ -19,6 +19,8 @@ import {
   scrapeThreads,
   scrapeBandcamp,
   scrapePixiv,
+  scrapeReddit,
+  scrapeTeraBox,
 } from "./scrapers/index.js";
 import { cleanUrl } from "./utils/urlUtils.js";
 import { getUserAgent } from "./utils/index.js";
@@ -109,8 +111,8 @@ function detectPlatform(url) {
   if (url.includes("youtube.com") || url.includes("youtu.be")) return "youtube";
   if (
     url.includes("twitter.com") ||
-    url.includes("x.com") ||
-    url.includes("t.co")
+    /(?:^|[/.])x\.com(?:[/?#:]|$)/i.test(url) ||
+    /(?:^|[/.])t\.co(?:[/?#:]|$)/i.test(url)
   )
     return "twitter";
   if (url.includes("spotify.com")) return "spotify";
@@ -137,6 +139,17 @@ function detectPlatform(url) {
     return "threads";
   if (url.includes("bandcamp.com")) return "bandcamp";
   if (url.includes("pixiv.net")) return "pixiv";
+  if (url.includes("reddit.com") || url.includes("redd.it")) return "reddit";
+  if (
+    url.includes("terabox") ||
+    url.includes("1024tera") ||
+    url.includes("nephobox") ||
+    url.includes("4funbox") ||
+    url.includes("mirrobox") ||
+    url.includes("momerybox") ||
+    url.includes("tibibox")
+  )
+    return "terabox";
   return "unknown";
 }
 
@@ -293,6 +306,10 @@ window.startAnalyze = async function () {
       data = await scrapeBandcamp(targetUrl);
     } else if (currentPlatform === "pixiv") {
       data = await scrapePixiv(targetUrl);
+    } else if (currentPlatform === "reddit") {
+      data = await scrapeReddit(targetUrl);
+    } else if (currentPlatform === "terabox") {
+      data = await scrapeTeraBox(targetUrl);
     } else {
       data = {
         status: false,
@@ -825,6 +842,8 @@ function generateFilename(title, type, index) {
       else if (currentPlatform === "bilibili") platform = "Bilibili";
       else if (currentPlatform === "pixiv") platform = "Pixiv";
       else if (currentPlatform === "bandcamp") platform = "Bandcamp";
+      else if (currentPlatform === "reddit") platform = "Reddit";
+      else if (currentPlatform === "terabox") platform = "TeraBox";
     }
     finalName = `${sanitized}_${platform}.${ext}`;
   } else if (template === "title-date") {

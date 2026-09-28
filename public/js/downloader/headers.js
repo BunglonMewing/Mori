@@ -44,7 +44,8 @@ export function buildDownloadHeaders(actualDownloadUrl, sourceUrl, url) {
     actualDownloadUrl.includes("savetwt") ||
     actualDownloadUrl.includes("twimg.com") ||
     actualDownloadUrl.includes("acxcdn.com") ||
-    (url && (url.includes("twitter") || url.includes("x.com")));
+    (url &&
+      (url.includes("twitter") || /(?:^|[/.])x\.com(?:[/?#:]|$)/i.test(url)));
 
   const downloadHeaders = {
     "User-Agent": getUserAgent(),

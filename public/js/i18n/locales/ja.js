@@ -87,7 +87,7 @@ export default {
   "glass-deep": "深いフロスト",
   "glass-off": "オフ (単色)",
   "glass-subtle": "控えめ",
-  "guide-step-1": "TikTok、Instagram、YouTube、Twitter/X、Douyinなど14以上の対応サイトからリンクをコピーします。",
+  "guide-step-1": "TikTok、Instagram、YouTube、Twitter/X、Douyinなど16以上の対応サイトからリンクをコピーします。",
   "guide-step-2": "「貼り付け」（またはその隣のバッチボタン）をタップしてリンクを解析し、画質またはフォーマットを選択します。",
   "guide-step-3": "「ダウンロード」をタップしてデバイスに直接保存します（プログレス表示付き）。",
   "guide-step-4": "「履歴」タブでオフライン再生したり、生体認証ロックで保護することができます。",

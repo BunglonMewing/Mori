@@ -85,7 +85,7 @@ export default {
   "glass-deep": "진한 프로스트",
   "glass-off": "끄기 (솔리드)",
   "glass-subtle": "은은하게",
-  "guide-step-1": "TikTok, Instagram, YouTube, Twitter/X, Douyin 등 14개 이상의 플랫폼에서 미디어 링크를 복사합니다.",
+  "guide-step-1": "TikTok, Instagram, YouTube, Twitter/X, Douyin 등 16개 이상의 플랫폼에서 미디어 링크를 복사합니다.",
   "guide-step-2": "'붙여넣기' (또는 옆의 일괄 버튼)를 누르거나 자동 붙여넣기를 사용하여 링크를 분석하고 품질을 선택합니다.",
   "guide-step-3": "'다운로드'를 눌러 실시간 진행 상황과 함께 기기 저장소에 직접 파일을 저장합니다.",
   "guide-step-4": "기록 탭에서 저장된 미디어를 재생하거나 생체 잠금으로 보호할 수 있습니다.",

@@ -1,4 +1,3 @@
-// MORI CORE SCRAPER ENGINE — SECURE RUNTIME LOADER (WITH OTA HOT-PATCHING)
 // Protected under GNU General Public License v3.0.
 // All rights reserved (C) 2026 coflyn.
 
@@ -35,13 +34,23 @@ async function obtainEngineSecret(challenge) {
   }
 
   // 2. Desktop Tauri Native Bridge (Rust machine code / precompiled static binary)
-  if (window.__TAURI__?.core?.invoke || window.__TAURI_INTERNALS__?.invoke || window.__TAURI__?.invoke) {
-    const invoke = window.__TAURI__?.core?.invoke || window.__TAURI_INTERNALS__?.invoke || window.__TAURI__?.invoke;
+  if (
+    window.__TAURI__?.core?.invoke ||
+    window.__TAURI_INTERNALS__?.invoke ||
+    window.__TAURI__?.invoke
+  ) {
+    const invoke =
+      window.__TAURI__?.core?.invoke ||
+      window.__TAURI_INTERNALS__?.invoke ||
+      window.__TAURI__?.invoke;
     try {
       const hex = await invoke("tauri_get_engine_key", { challenge });
       if (hex && hex.length >= 32) return hex;
     } catch (e) {
-      console.error("[Mori Engine] Native desktop security verification failed:", e);
+      console.error(
+        "[Mori Engine] Native desktop security verification failed:",
+        e,
+      );
     }
   }
 
@@ -54,14 +63,18 @@ async function obtainEngineSecret(challenge) {
         throw new Error("Mori Engine: Unauthorized application distribution.");
       }
 
-      const secPlugin = window.Capacitor?.Plugins?.MoriSecurity || window.MoriSecurity;
+      const secPlugin =
+        window.Capacitor?.Plugins?.MoriSecurity || window.MoriSecurity;
       if (secPlugin?.getEngineSecurityKey) {
         const res = await secPlugin.getEngineSecurityKey({ challenge });
         if (res?.key && res.key.length >= 32) return res.key;
       }
     } catch (e) {
       if (e.message?.includes("Unauthorized")) throw e;
-      console.error("[Mori Engine] Native iOS security verification failed:", e);
+      console.error(
+        "[Mori Engine] Native iOS security verification failed:",
+        e,
+      );
     }
   }
 
@@ -77,7 +90,10 @@ async function loadCoreScrapers() {
     // A. Check for OTA Patched scrapers.bin in localStorage
     try {
       const patchedB64 = localStorage.getItem("mori_patched_scraper_bin");
-      const activeVer = parseInt(localStorage.getItem("mori_active_scraper_version") || "0", 10);
+      const activeVer = parseInt(
+        localStorage.getItem("mori_active_scraper_version") || "0",
+        10,
+      );
       if (patchedB64 && activeVer >= BUNDLED_SCRAPER_VERSION) {
         const binStr = atob(patchedB64);
         const len = binStr.length;
@@ -85,7 +101,9 @@ async function loadCoreScrapers() {
         for (let i = 0; i < len; i++) bytes[i] = binStr.charCodeAt(i);
         arrayBuf = bytes.buffer;
         isFromOtaPatch = true;
-        console.log(`[Mori Engine] Loaded OTA patched scraper core v${activeVer}`);
+        console.log(
+          `[Mori Engine] Loaded OTA patched scraper core v${activeVer}`,
+        );
       }
     } catch (otaErr) {
       console.warn("[Mori Engine] OTA patch load warning:", otaErr);
@@ -110,10 +128,20 @@ async function loadCoreScrapers() {
         }
 
         // 2. Desktop Tauri Native Bridge
-        if (!arrayBuf && (window.__TAURI__?.core?.invoke || window.__TAURI_INTERNALS__?.invoke || window.__TAURI__?.invoke)) {
-          const invoke = window.__TAURI__?.core?.invoke || window.__TAURI_INTERNALS__?.invoke || window.__TAURI__?.invoke;
+        if (
+          !arrayBuf &&
+          (window.__TAURI__?.core?.invoke ||
+            window.__TAURI_INTERNALS__?.invoke ||
+            window.__TAURI__?.invoke)
+        ) {
+          const invoke =
+            window.__TAURI__?.core?.invoke ||
+            window.__TAURI_INTERNALS__?.invoke ||
+            window.__TAURI__?.invoke;
           try {
-            const rawBytes = await invoke("tauri_read_file_bytes", { path: "public/js/scrapers.bin" });
+            const rawBytes = await invoke("tauri_read_file_bytes", {
+              path: "public/js/scrapers.bin",
+            });
             arrayBuf = new Uint8Array(rawBytes).buffer;
           } catch (_) {}
         }
@@ -122,7 +150,9 @@ async function loadCoreScrapers() {
         if (!arrayBuf && window.Capacitor?.Plugins?.Filesystem) {
           try {
             const fs = window.Capacitor.Plugins.Filesystem;
-            const readRes = await fs.readFile({ path: "public/js/scrapers.bin" });
+            const readRes = await fs.readFile({
+              path: "public/js/scrapers.bin",
+            });
             if (readRes?.data) {
               const binStr = atob(readRes.data);
               const len = binStr.length;
@@ -135,7 +165,12 @@ async function loadCoreScrapers() {
 
         // 4. Relative Fetch API
         if (!arrayBuf) {
-          const binUrls = ["js/scrapers.bin", "/js/scrapers.bin", "./js/scrapers.bin", "file:///android_asset/public/js/scrapers.bin"];
+          const binUrls = [
+            "js/scrapers.bin",
+            "/js/scrapers.bin",
+            "./js/scrapers.bin",
+            "file:///android_asset/public/js/scrapers.bin",
+          ];
           for (const u of binUrls) {
             try {
               const res = await fetch(u);
@@ -149,39 +184,51 @@ async function loadCoreScrapers() {
 
         // 5. XMLHttpRequest Fallback
         if (!arrayBuf && typeof XMLHttpRequest !== "undefined") {
-          const tryXhr = (url) => new Promise((resolve) => {
-            try {
-              const xhr = new XMLHttpRequest();
-              xhr.open("GET", url, true);
-              xhr.responseType = "arraybuffer";
-              xhr.onload = () => {
-                if (xhr.status === 200 || (xhr.status === 0 && xhr.response && xhr.response.byteLength > 0)) {
-                  resolve(xhr.response);
-                } else {
-                  resolve(null);
-                }
-              };
-              xhr.onerror = () => resolve(null);
-              xhr.send();
-            } catch (_) {
-              resolve(null);
-            }
-          });
-          for (const u of ["js/scrapers.bin", "./js/scrapers.bin", "file:///android_asset/public/js/scrapers.bin"]) {
+          const tryXhr = (url) =>
+            new Promise((resolve) => {
+              try {
+                const xhr = new XMLHttpRequest();
+                xhr.open("GET", url, true);
+                xhr.responseType = "arraybuffer";
+                xhr.onload = () => {
+                  if (
+                    xhr.status === 200 ||
+                    (xhr.status === 0 &&
+                      xhr.response &&
+                      xhr.response.byteLength > 0)
+                  ) {
+                    resolve(xhr.response);
+                  } else {
+                    resolve(null);
+                  }
+                };
+                xhr.onerror = () => resolve(null);
+                xhr.send();
+              } catch (_) {
+                resolve(null);
+              }
+            });
+          for (const u of [
+            "js/scrapers.bin",
+            "./js/scrapers.bin",
+            "file:///android_asset/public/js/scrapers.bin",
+          ]) {
             arrayBuf = await tryXhr(u);
             if (arrayBuf) break;
           }
         }
       }
 
-      if (!arrayBuf) throw new Error("Could not locate scrapers.bin binary payload");
+      if (!arrayBuf)
+        throw new Error("Could not locate scrapers.bin binary payload");
 
       const bytes = new Uint8Array(arrayBuf);
-      
+
       // Dynamic handshake with native security layer
-      const challenge = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+      const challenge =
+        Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
       const hexKey = await obtainEngineSecret(challenge);
-      
+
       if (!hexKey || hexKey.length < 32) {
         throw new Error("Security verification handshake failed");
       }
@@ -211,7 +258,9 @@ async function loadCoreScrapers() {
             const writer = ds.writable.getWriter();
             writer.write(deobf);
             writer.close();
-            const decompressedBuf = await new Response(ds.readable).arrayBuffer();
+            const decompressedBuf = await new Response(
+              ds.readable,
+            ).arrayBuffer();
             scriptText = new TextDecoder().decode(decompressedBuf);
           } catch (dsErr) {
             console.error("[Mori Engine] Decompression failed:", dsErr);
@@ -219,26 +268,34 @@ async function loadCoreScrapers() {
         }
       }
 
-      if (!scriptText) throw new Error("Could not decompress Mori scraper bytecode");
+      if (!scriptText)
+        throw new Error("Could not decompress Mori scraper bytecode");
 
       const fn = new Function(
         scriptText +
-          "\nreturn typeof __MoriCoreScrapers !== 'undefined' ? __MoriCoreScrapers : (typeof window !== 'undefined' ? window.__MoriCoreScrapers : null);"
+          "\nreturn typeof __MoriCoreScrapers !== 'undefined' ? __MoriCoreScrapers : (typeof window !== 'undefined' ? window.__MoriCoreScrapers : null);",
       );
       const mod = fn();
 
       if (!mod) {
-        throw new Error("Mori Engine: Failed to instantiate core scraper modules.");
+        throw new Error(
+          "Mori Engine: Failed to instantiate core scraper modules.",
+        );
       }
 
       window.__MoriCoreScrapers = mod;
 
-      console.log(`[Mori Engine] Core scrapers initialized successfully (${isFromOtaPatch ? "OTA Patch" : "Bundled"} v${window.__MORI_BUNDLED_SCRAPER_VERSION__}).`);
+      console.log(
+        `[Mori Engine] Core scrapers initialized successfully (${isFromOtaPatch ? "OTA Patch" : "Bundled"} v${window.__MORI_BUNDLED_SCRAPER_VERSION__}).`,
+      );
       return window.__MoriCoreScrapers;
     } catch (e) {
       // Safe Mode Auto-Recovery: If OTA patch was corrupt, discard it and reload once
       if (isFromOtaPatch) {
-        console.warn("[Mori Engine] Corrupted OTA patch detected, clearing and resetting to bundled core...", e);
+        console.warn(
+          "[Mori Engine] Corrupted OTA patch detected, clearing and resetting to bundled core...",
+          e,
+        );
         localStorage.removeItem("mori_patched_scraper_bin");
         localStorage.removeItem("mori_active_scraper_version");
         _corePromise = null;
@@ -254,47 +311,84 @@ async function loadCoreScrapers() {
   return _corePromise;
 }
 
-export async function scrapeTikTok(...args) { return (await loadCoreScrapers()).scrapeTikTok(...args); }
-export function setTikTokSource(...args) { loadCoreScrapers().then(m => m.setTikTokSource(...args)); }
+export async function scrapeTikTok(...args) {
+  return (await loadCoreScrapers()).scrapeTikTok(...args);
+}
+export function setTikTokSource(...args) {
+  loadCoreScrapers().then((m) => m.setTikTokSource(...args));
+}
 
-export async function scrapeYouTube(...args) { return (await loadCoreScrapers()).scrapeYouTube(...args); }
-export function setYouTubeSource(...args) { loadCoreScrapers().then(m => m.setYouTubeSource(...args)); }
+export async function scrapeYouTube(...args) {
+  return (await loadCoreScrapers()).scrapeYouTube(...args);
+}
+export function setYouTubeSource(...args) {
+  loadCoreScrapers().then((m) => m.setYouTubeSource(...args));
+}
 
-export async function scrapeInstagram(...args) { return (await loadCoreScrapers()).scrapeInstagram(...args); }
-export function setInstagramSource(...args) { loadCoreScrapers().then(m => m.setInstagramSource(...args)); }
+export async function scrapeInstagram(...args) {
+  return (await loadCoreScrapers()).scrapeInstagram(...args);
+}
+export function setInstagramSource(...args) {
+  loadCoreScrapers().then((m) => m.setInstagramSource(...args));
+}
 
-export async function scrapeTwitter(...args) { return (await loadCoreScrapers()).scrapeTwitter(...args); }
-export function setTwitterSource(...args) { loadCoreScrapers().then(m => m.setTwitterSource(...args)); }
+export async function scrapeTwitter(...args) {
+  return (await loadCoreScrapers()).scrapeTwitter(...args);
+}
+export function setTwitterSource(...args) {
+  loadCoreScrapers().then((m) => m.setTwitterSource(...args));
+}
 
-export async function scrapeSpotify(...args) { return (await loadCoreScrapers()).scrapeSpotify(...args); }
-export function setSpotifySource(...args) { loadCoreScrapers().then(m => m.setSpotifySource(...args)); }
+export async function scrapeSpotify(...args) {
+  return (await loadCoreScrapers()).scrapeSpotify(...args);
+}
+export function setSpotifySource(...args) {
+  loadCoreScrapers().then((m) => m.setSpotifySource(...args));
+}
 
-export async function scrapeBilibili(...args) { return (await loadCoreScrapers()).scrapeBilibili(...args); }
-export async function scrapePixiv(...args) { return (await loadCoreScrapers()).scrapePixiv(...args); }
-export async function scrapeRedNote(...args) { return (await loadCoreScrapers()).scrapeRedNote(...args); }
+export async function scrapeBilibili(...args) {
+  return (await loadCoreScrapers()).scrapeBilibili(...args);
+}
+export async function scrapePixiv(...args) {
+  return (await loadCoreScrapers()).scrapePixiv(...args);
+}
+export async function scrapeRedNote(...args) {
+  return (await loadCoreScrapers()).scrapeRedNote(...args);
+}
 export async function scrapeDouyin(url, ...rest) {
   const originalUrl = url;
   let targetUrl = url;
 
-  if (typeof url === "string" && (url.includes("v.douyin.com") || url.includes("/share/slides/"))) {
+  if (
+    typeof url === "string" &&
+    (url.includes("v.douyin.com") || url.includes("/share/slides/"))
+  ) {
     try {
       let resolvedUrl = url;
       if (url.includes("v.douyin.com")) {
-        const fetchRes = await scraperFetch({
-          url,
-          method: "GET",
-          headers: {
-            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1",
-            Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        const fetchRes = await scraperFetch(
+          {
+            url,
+            method: "GET",
+            headers: {
+              "User-Agent":
+                "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1",
+              Accept:
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            },
+            rawResponse: true,
           },
-          rawResponse: true
-        }, "Douyin Resolver");
+          "Douyin Resolver",
+        );
         if (fetchRes?.url) resolvedUrl = fetchRes.url;
       }
 
-      const slidesMatch = resolvedUrl.match(new RegExp("share/slides/([0-9]{15,22})", "i"));
+      const slidesMatch = resolvedUrl.match(
+        new RegExp("share/slides/([0-9]{15,22})", "i"),
+      );
       if (slidesMatch && slidesMatch[1]) {
-        targetUrl = "https://www.iesdouyin.com/share/video/" + slidesMatch[1] + "/";
+        targetUrl =
+          "https://www.iesdouyin.com/share/video/" + slidesMatch[1] + "/";
       } else if (resolvedUrl && resolvedUrl !== url) {
         targetUrl = resolvedUrl;
       }
@@ -308,11 +402,11 @@ export async function scrapeDouyin(url, ...rest) {
   try {
     res = await core.scrapeDouyin(targetUrl, ...rest);
     if (!res || !res.status) {
-      await new Promise(r => setTimeout(r, 400));
+      await new Promise((r) => setTimeout(r, 400));
       res = await core.scrapeDouyin(targetUrl, ...rest);
     }
   } catch (err) {
-    await new Promise(r => setTimeout(r, 400));
+    await new Promise((r) => setTimeout(r, 400));
     res = await core.scrapeDouyin(targetUrl, ...rest);
   }
 
@@ -323,8 +417,24 @@ export async function scrapeDouyin(url, ...rest) {
   }
   return res;
 }
-export async function scrapeThreads(...args) { return (await loadCoreScrapers()).scrapeThreads(...args); }
-export async function scrapePinterest(...args) { return (await loadCoreScrapers()).scrapePinterest(...args); }
-export async function scrapeAppleMusic(...args) { return (await loadCoreScrapers()).scrapeAppleMusic(...args); }
-export async function scrapeFacebook(...args) { return (await loadCoreScrapers()).scrapeFacebook(...args); }
-export async function scrapeBandcamp(...args) { return (await loadCoreScrapers()).scrapeBandcamp(...args); }
+export async function scrapeThreads(...args) {
+  return (await loadCoreScrapers()).scrapeThreads(...args);
+}
+export async function scrapePinterest(...args) {
+  return (await loadCoreScrapers()).scrapePinterest(...args);
+}
+export async function scrapeAppleMusic(...args) {
+  return (await loadCoreScrapers()).scrapeAppleMusic(...args);
+}
+export async function scrapeFacebook(...args) {
+  return (await loadCoreScrapers()).scrapeFacebook(...args);
+}
+export async function scrapeBandcamp(...args) {
+  return (await loadCoreScrapers()).scrapeBandcamp(...args);
+}
+export async function scrapeReddit(...args) {
+  return (await loadCoreScrapers()).scrapeReddit(...args);
+}
+export async function scrapeTeraBox(...args) {
+  return (await loadCoreScrapers()).scrapeTeraBox(...args);
+}

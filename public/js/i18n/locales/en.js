@@ -87,7 +87,7 @@ export default {
   "glass-deep": "Deep Frosted",
   "glass-off": "Off (Solid)",
   "glass-subtle": "Subtle",
-  "guide-step-1": "Copy any media link from TikTok, Instagram, YouTube, Twitter/X, Douyin & 14+ platforms.",
+  "guide-step-1": "Copy any media link from TikTok, Instagram, YouTube, Twitter/X, Douyin & 16+ platforms.",
   "guide-step-2": "Tap \"Paste\" (or the Batch button beside it) to analyze the link and select your preferred quality.",
   "guide-step-3": "Tap \"Download\" to save files directly to device storage with live progress tracking.",
   "guide-step-4": "Access saved media in History for offline playback or secure with Biometric Lock.",

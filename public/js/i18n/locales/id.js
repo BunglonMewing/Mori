@@ -87,7 +87,7 @@ export default {
   "glass-deep": "Pekat (Frosted)",
   "glass-off": "Mati (Solid)",
   "glass-subtle": "Halus",
-  "guide-step-1": "Salin link media dari TikTok, Instagram, YouTube, Twitter/X, Douyin & 14+ platform.",
+  "guide-step-1": "Salin link media dari TikTok, Instagram, YouTube, Twitter/X, Douyin & 16+ platform.",
   "guide-step-2": "Ketuk \"Tempel\" (atau tombol Batch di sebelahnya) untuk menganalisis link dan pilih kualitas.",
   "guide-step-3": "Ketuk \"Unduh\" untuk menyimpan file langsung ke memori HP dengan pantauan progress.",
   "guide-step-4": "Buka media tersimpan di Riwayat untuk pemutaran offline atau amankan dengan Kunci Biometrik.",

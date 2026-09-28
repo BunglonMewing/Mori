@@ -87,7 +87,7 @@ export default {
   "glass-deep": "磨砂毛玻璃",
   "glass-off": "关闭 (纯色)",
   "glass-subtle": "微弱",
-  "guide-step-1": "从 TikTok、Instagram、YouTube、Twitter/X、抖音等 14+ 平台复制媒体链接。",
+  "guide-step-1": "从 TikTok、Instagram、YouTube、Twitter/X、抖音等 16+ 平台复制媒体链接。",
   "guide-step-2": "点击“粘贴”（或旁边的批量按钮）解析链接并选择清晰度。",
   "guide-step-3": "点击“下载”直接保存文件到设备存储，并实时追踪进度。",
   "guide-step-4": "在“历史”中访问已保存的媒体进行离线播放，或使用生物识别锁保护隐私。",

@@ -1349,8 +1349,8 @@ export async function exportGalleryToPdf(title, items) {
         platformFolder = "TikTok";
       else if (
         firstUrl.includes("twitter") ||
-        firstUrl.includes("x.com") ||
-        firstUrl.includes("t.co")
+        /(?:^|[/.])x\.com(?:[/?#:]|$)/i.test(firstUrl) ||
+        /(?:^|[/.])t\.co(?:[/?#:]|$)/i.test(firstUrl)
       )
         platformFolder = "Twitter";
       else if (
@@ -1370,6 +1370,18 @@ export async function exportGalleryToPdf(title, items) {
         firstUrl.includes("bili.im")
       )
         platformFolder = "Bilibili";
+      else if (firstUrl.includes("reddit") || firstUrl.includes("redd.it"))
+        platformFolder = "Reddit";
+      else if (
+        firstUrl.includes("terabox") ||
+        firstUrl.includes("1024tera") ||
+        firstUrl.includes("nephobox") ||
+        firstUrl.includes("4funbox") ||
+        firstUrl.includes("mirrobox") ||
+        firstUrl.includes("momerybox") ||
+        firstUrl.includes("tibibox")
+      )
+        platformFolder = "TeraBox";
 
       pdfSubfolder = `${pdfSubfolder}/${platformFolder}`;
     }

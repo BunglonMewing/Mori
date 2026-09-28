@@ -121,7 +121,8 @@ export async function startNativeDownload(
     if (src.includes("tiktok")) return "TikTok";
     if (src.includes("instagram")) return "Instagram";
     if (src.includes("youtube")) return "YouTube";
-    if (src.includes("twitter") || src.includes("x.com")) return "Twitter";
+    if (src.includes("twitter") || /(?:^|[/.])x\.com(?:[/?#:]|$)/i.test(src))
+      return "Twitter";
     if (src.includes("facebook")) return "Facebook";
     if (src.includes("pinterest")) return "Pinterest";
     if (src.includes("douyin")) return "Douyin";
@@ -132,6 +133,17 @@ export async function startNativeDownload(
     if (src.includes("xiaohongshu") || src.includes("rednote"))
       return "RedNote";
     if (src.includes("threads")) return "Threads";
+    if (src.includes("reddit") || src.includes("redd.it")) return "Reddit";
+    if (
+      src.includes("terabox") ||
+      src.includes("1024tera") ||
+      src.includes("nephobox") ||
+      src.includes("4funbox") ||
+      src.includes("mirrobox") ||
+      src.includes("momerybox") ||
+      src.includes("tibibox")
+    )
+      return "TeraBox";
     if (src.includes("snapchat")) return "Snapchat";
     return "Media";
   })();

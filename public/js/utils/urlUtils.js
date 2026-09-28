@@ -73,6 +73,16 @@ export function cleanUrl(url) {
       u.hostname.includes("xhslink.cn")
     ) {
       // Keep xsec_token for Xiaohongshu / RedNote security validation
+    } else if (
+      u.hostname.includes("terabox") ||
+      u.hostname.includes("1024tera") ||
+      u.hostname.includes("nephobox") ||
+      u.hostname.includes("4funbox") ||
+      u.hostname.includes("mirrobox") ||
+      u.hostname.includes("momerybox") ||
+      u.hostname.includes("tibibox")
+    ) {
+      // Keep query parameters (e.g. surl) for TeraBox
     } else if (!u.hostname.includes("facebook.com")) {
       if (!u.searchParams.has("id") && !u.searchParams.has("story_fbid")) {
         u.search = "";

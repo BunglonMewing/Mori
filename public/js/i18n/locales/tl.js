@@ -85,7 +85,7 @@ export default {
   "glass-deep": "Makapal",
   "glass-off": "Naka-off (Solid)",
   "glass-subtle": "Banayad",
-  "guide-step-1": "Kopyahin ang anumang link ng media mula sa TikTok, Instagram, YouTube, Twitter/X, Douyin at 14+ pang platform.",
+  "guide-step-1": "Kopyahin ang anumang link ng media mula sa TikTok, Instagram, YouTube, Twitter/X, Douyin at 16+ pang platform.",
   "guide-step-2": "Pindutin ang \"I-paste\" (o ang Batch button sa tabi nito) upang suriin ang link at piliin ang nais na kalidad.",
   "guide-step-3": "Pindutin ang \"I-download\" upang direktang i-save ang mga file sa device storage na may live progress tracking.",
   "guide-step-4": "I-access ang na-save na media sa Kasaysayan para sa offline playback o protektahan gamit ang Biometric Lock.",

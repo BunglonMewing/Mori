@@ -307,13 +307,33 @@ export async function showModal(item, onRedownload) {
           });
         });
       } else {
+        const firstDl = item.downloads?.[0];
+        const dlType = (firstDl?.type || item.type || "").toUpperCase();
+        const dlUrl = (firstDl?.url || item.url || "").toLowerCase();
+        const isVid =
+          dlType.includes("VIDEO") ||
+          dlType.includes("MP4") ||
+          dlUrl.includes(".mp4") ||
+          dlUrl.includes(".m3u8") ||
+          dlUrl.includes("video") ||
+          item.type === "video";
+        const isAud =
+          dlType.includes("AUDIO") ||
+          dlType.includes("MP3") ||
+          dlUrl.includes(".mp3") ||
+          dlUrl.includes(".m4a") ||
+          item.type === "audio";
+
+        const mediaType = isVid ? "VIDEO" : isAud ? "MP3" : "IMAGE";
+
         displayItems.push({
           url:
+            (mediaType === "IMAGE" && (item.thumbnail || firstDl?.url)) ||
+            firstDl?.url ||
             item.thumbnail ||
-            (item.downloads && item.downloads[0]?.url) ||
             item.url ||
             "",
-          type: "IMAGE",
+          type: mediaType,
           thumbnail: item.thumbnail,
           title: item.title,
           isLocal: false,
@@ -433,7 +453,10 @@ export async function showModal(item, onRedownload) {
         }
         modalPath.title = dirPath;
 
-        if (!hasDownloadedFiles || !currentSlide.isLocal) {
+        const hadDownloadedFiles =
+          (item.localFiles && item.localFiles.length > 0) || !!item.localUri;
+
+        if (hadDownloadedFiles && (!hasDownloadedFiles || !currentSlide.isLocal)) {
           showMissingStatus();
         } else {
           clearMissingStatus();
@@ -523,7 +546,26 @@ export async function showModal(item, onRedownload) {
     }
 
     if (hasDownloadedFiles) {
-      slidesWrapper.addEventListener("error", showMissingStatus, true);
+      slidesWrapper.addEventListener(
+        "error",
+        (e) => {
+          const target = e.target;
+          if (
+            target &&
+            (target.tagName === "VIDEO" ||
+              target.tagName === "AUDIO" ||
+              target.tagName === "IMG") &&
+            !target.classList.contains("fallback-img") &&
+            !target.classList.contains("poster-img")
+          ) {
+            const activeSlide = displayItems[modalCurrentSlide];
+            if (activeSlide?.isLocal) {
+              showMissingStatus();
+            }
+          }
+        },
+        true,
+      );
       slidesWrapper.addEventListener(
         "mori_media_load_error",
         showMissingStatus,

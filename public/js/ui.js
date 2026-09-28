@@ -124,9 +124,18 @@ export function renderHistory(onItemClick, onDeleteClick) {
         thumbSrc = item.localFiles[0].thumbnail;
       } else if (item.localFiles && item.localFiles.length > 0) {
         const first = item.localFiles[0];
-        thumbSrc = first.thumbnail || first.uri || first.path;
+        const isImg =
+          first.type === "IMAGE" ||
+          /\.(jpe?g|png|webp|gif|bmp)$/i.test(first.path || first.uri || "");
+        if (isValidThumb(first.thumbnail)) {
+          thumbSrc = first.thumbnail;
+        } else if (isImg) {
+          thumbSrc = first.uri || first.path;
+        }
       } else if (item.localUri) {
-        thumbSrc = item.localUri;
+        if (/\.(jpe?g|png|webp|gif|bmp)$/i.test(item.localUri)) {
+          thumbSrc = item.localUri;
+        }
       }
 
       if (

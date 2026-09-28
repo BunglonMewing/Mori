@@ -28,6 +28,18 @@ export function resolveExtension(type, url) {
   )
     ext = "mp4";
 
+  const knownExt = (typeStr || urlLower).match(/\.([a-z0-9]{2,5})(?:\?|$)/i);
+  if (knownExt) {
+    const c = knownExt[1].toLowerCase();
+    if (
+      !["html", "htm", "php", "asp", "aspx", "jsp", "com", "net", "org"].includes(
+        c,
+      )
+    ) {
+      ext = c;
+    }
+  }
+
   return ext.toLowerCase();
 }
 
@@ -55,7 +67,10 @@ export function sanitizeTitle(title, type) {
 
 export function generateFileName(sanitizedTitle, ext, sourceUrl, url) {
   const template = localStorage.getItem("mori_filename") || "title";
-  let fileName = `${sanitizedTitle}.${ext}`;
+  const cleanTitle = sanitizedTitle.toLowerCase().endsWith("." + ext.toLowerCase())
+    ? sanitizedTitle.slice(0, -(ext.length + 1))
+    : sanitizedTitle;
+  let fileName = `${cleanTitle}.${ext}`;
 
   if (template === "title-platform") {
     let platform = "Media";
@@ -65,22 +80,37 @@ export function generateFileName(sanitizedTitle, ext, sourceUrl, url) {
     else if (lowerUrl.includes("instagram")) platform = "Instagram";
     else if (lowerUrl.includes("youtube") || lowerUrl.includes("youtu.be"))
       platform = "YouTube";
-    else if (lowerUrl.includes("twitter") || lowerUrl.includes("x.com"))
+    else if (
+      lowerUrl.includes("twitter") ||
+      /(?:^|[/.])x\.com(?:[/?#:]|$)/i.test(lowerUrl)
+    )
       platform = "Twitter";
     else if (lowerUrl.includes("facebook")) platform = "Facebook";
     else if (lowerUrl.includes("pinterest")) platform = "Pinterest";
     else if (lowerUrl.includes("spotify")) platform = "Spotify";
     else if (lowerUrl.includes("rednote") || lowerUrl.includes("xiaohongshu"))
       platform = "RedNote";
-    fileName = `${sanitizedTitle}_${platform}.${ext}`;
+    else if (lowerUrl.includes("reddit") || lowerUrl.includes("redd.it"))
+      platform = "Reddit";
+    else if (
+      lowerUrl.includes("terabox") ||
+      lowerUrl.includes("1024tera") ||
+      lowerUrl.includes("nephobox") ||
+      lowerUrl.includes("4funbox") ||
+      lowerUrl.includes("mirrobox") ||
+      lowerUrl.includes("momerybox") ||
+      lowerUrl.includes("tibibox")
+    )
+      platform = "TeraBox";
+    fileName = `${cleanTitle}_${platform}.${ext}`;
   } else if (template === "title-date") {
     const dateStr = new Date().toISOString().split("T")[0];
-    fileName = `${sanitizedTitle}_${dateStr}.${ext}`;
+    fileName = `${cleanTitle}_${dateStr}.${ext}`;
   } else if (template === "title") {
-    fileName = `${sanitizedTitle}.${ext}`;
+    fileName = `${cleanTitle}.${ext}`;
   } else {
     // default: Title_Timestamp
-    fileName = `${sanitizedTitle}_${Date.now()}.${ext}`;
+    fileName = `${cleanTitle}_${Date.now()}.${ext}`;
   }
 
   // Ensure file extension is strictly lowercase for broad device compatibility
@@ -106,7 +136,11 @@ export function detectPlatformFolder(sourceUrl, url) {
   if (src.includes("instagram") || src.includes("instagr.am"))
     return "Instagram";
   if (src.includes("youtube") || src.includes("youtu.be")) return "YouTube";
-  if (src.includes("twitter") || src.includes("x.com") || src.includes("t.co"))
+  if (
+    src.includes("twitter") ||
+    /(?:^|[/.])x\.com(?:[/?#:]|$)/i.test(src) ||
+    /(?:^|[/.])t\.co(?:[/?#:]|$)/i.test(src)
+  )
     return "Twitter";
   if (
     src.includes("facebook") ||
@@ -136,6 +170,17 @@ export function detectPlatformFolder(sourceUrl, url) {
     return "Pixiv";
   if (src.includes("bandcamp") || src.includes("bandcamp.com"))
     return "Bandcamp";
+  if (src.includes("reddit") || src.includes("redd.it")) return "Reddit";
+  if (
+    src.includes("terabox") ||
+    src.includes("1024tera") ||
+    src.includes("nephobox") ||
+    src.includes("4funbox") ||
+    src.includes("mirrobox") ||
+    src.includes("momerybox") ||
+    src.includes("tibibox")
+  )
+    return "TeraBox";
 
   return "Other";
 }

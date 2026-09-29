@@ -46,7 +46,8 @@ Save and download videos, photos, and music from 16 platforms. No watermarks. No
 3. [Features](#-features)
 4. [Supported Platforms & Scraper Engines](#-supported-platforms--scraper-engines)
 5. [For Developers & Building from Source](#-for-developers--building-from-source)
-6. [Why the Scraper Core is Pre-Compiled](#-why-the-scraper-core-is-pre-compiled-scrapersbin)
+6. [Scraper Architecture](#-scraper-architecture)
+
 7. [Disclaimer](#-disclaimer)
 8. [License & Terms of Use](#-license--terms-of-use)
 
@@ -198,10 +199,11 @@ Mori/
 │   │   │   │   └── index.js      # Barrel re-export for settings sub-modules
 │   │   │   ├── settings.js     # User preferences orchestrator & backward-compatible facade
 │   │   │   └── update.js       # Automatic GitHub release update checker
-│   │   ├── scrapers.bin        # Pre-compiled & encrypted core scraper binary bytecode (16 platforms)
 │   │   ├── scrapers/           # Scraper runtime loader & HTTP helper
+│   │   │   ├── bundle.js       # Bundled scraper core (esbuild IIFE, all 16 platforms)
 │   │   │   ├── httpHelper.js   # Unified HTTP engine (native OkHttp/Tauri bridge + UA rotation)
-│   │   │   └── index.js        # Dynamic handshake runtime loader & decryptor for scrapers.bin
+│   │   │   └── index.js        # Runtime loader with OTA hot-patch support
+
 │   │   ├── ui/                 # UI rendering & presentation layer
 │   │   │   ├── downloadBubble.js # Persistent floating download bubble & dropup task manager
 │   │   │   ├── nativeDownload.js # Native download flow orchestrator & progress tracking
@@ -233,13 +235,14 @@ Mori/
 
 </details>
 
-## 🔒 Why the Scraper Core is Pre-Compiled (`scrapers.bin`)
+## 🔧 Scraper Architecture
 
-To prevent unauthorized parties from cloning this project, injecting predatory ads or trackers, and distributing monetized knockoffs to unsuspecting users:
+Mori's scraper core is bundled via esbuild into `public/js/scrapers/bundle.js` — a plain minified IIFE containing all 16 platform scrapers. The scraper source lives in `src-scrapers/` (private, not committed to the public repo).
 
-- **Integrity-Protected Scraper Core**: Distributed as a pre-compiled, tamper-resistant binary (`scrapers.bin`) backed by native Android OkHttp.
+- **OTA Hot-Patching**: When a platform changes its API, Mori can silently download and apply an updated `bundle.js` from GitHub without requiring a full app update.
 - **Open Client Architecture**: The entire frontend, UI design system, and core app logic remain **100% open source under GPL-3.0**.
 - **Collaborative Development**: Honest developers who want to improve scrapers or fix broken endpoints are always welcome to coordinate through [CONTRIBUTING.md](CONTRIBUTING.md).
+
 
 ## ⚖️ Disclaimer
 

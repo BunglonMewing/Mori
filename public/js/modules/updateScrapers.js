@@ -5,7 +5,8 @@ import { showInfoModal, showConfirm } from "./modals.js";
 import { BUNDLED_SCRAPER_VERSION } from "../scrapers/index.js";
 
 export const SCRAPER_VERSION_URL = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/public/scrapers-version.json`;
-export const SCRAPER_BIN_URL = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/public/js/scrapers.bin`;
+export const SCRAPER_BIN_URL = `https://raw.githubusercontent.com/${GITHUB_REPO}/main/public/js/scrapers/bundle.js`;
+
 
 export const ACTIVE_SCRAPER_VERSION_KEY = "mori_active_scraper_version";
 export const PATCHED_SCRAPER_BIN_KEY = "mori_patched_scraper_bin";
@@ -60,7 +61,7 @@ async function fetchRemoteJson(url) {
   }
 }
 
-async function fetchRemoteBinary(url) {
+async function fetchRemoteText(url) {
   const tauriInvoke =
     window.__TAURI__?.core?.invoke ||
     window.__TAURI_INTERNALS__?.invoke ||
@@ -69,57 +70,35 @@ async function fetchRemoteBinary(url) {
   if (CapacitorHttp) {
     const res = await CapacitorHttp.get({
       url,
-      responseType: "arraybuffer",
-      headers: { "Cache-Control": "no-cache" },
+      headers: { "Cache-Control": "no-cache", "User-Agent": "Mori-App" },
     });
-    // CapacitorHttp returns base64 on arraybuffer response
-    if (typeof res.data === "string") return res.data;
-    if (res.data instanceof ArrayBuffer) {
-      return arrayBufferToBase64(res.data);
-    }
-    return null;
+    return typeof res.data === "string" ? res.data : JSON.stringify(res.data);
   } else if (tauriInvoke) {
     const res = await tauriInvoke("tauri_http_request", {
       url,
       method: "GET",
-      responseType: "arraybuffer",
-      headers: { "Cache-Control": "no-cache" },
+      headers: { "Cache-Control": "no-cache", "User-Agent": "Mori-App" },
     });
     const rawData = res?.data || res?.body || res;
-    if (typeof rawData === "string") return rawData;
-    if (Array.isArray(rawData)) {
-      const bytes = new Uint8Array(rawData);
-      return arrayBufferToBase64(bytes.buffer);
-    }
-    return null;
+    return typeof rawData === "string" ? rawData : JSON.stringify(rawData);
   } else {
     const res = await fetch(url, { cache: "no-store" });
-    const buf = await res.arrayBuffer();
-    return arrayBufferToBase64(buf);
+    return res.text();
   }
 }
 
-function arrayBufferToBase64(buffer) {
-  let binary = "";
-  const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
-}
-
-export async function downloadAndApplyScraperPatch(remoteVer, binUrl) {
-  const base64Bin = await fetchRemoteBinary(binUrl || SCRAPER_BIN_URL);
-  if (!base64Bin || base64Bin.length < 500) {
-    throw new Error("Downloaded scrapers.bin is corrupted or too small");
+export async function downloadAndApplyScraperPatch(remoteVer, bundleUrl) {
+  const jsText = await fetchRemoteText(bundleUrl || SCRAPER_BIN_URL);
+  if (!jsText || jsText.length < 500) {
+    throw new Error("Downloaded bundle.js is corrupted or too small");
   }
 
-  localStorage.setItem(PATCHED_SCRAPER_BIN_KEY, base64Bin);
+  localStorage.setItem(PATCHED_SCRAPER_BIN_KEY, jsText);
   localStorage.setItem(ACTIVE_SCRAPER_VERSION_KEY, remoteVer.toString());
   updateScraperVersionUI(remoteVer);
   return true;
 }
+
 
 export async function checkScraperUpdate(isManual = false) {
   const updateScrapersBtn = document.getElementById("checkScraperUpdateBtn");

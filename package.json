@@ -31,7 +31,6 @@
     "@capacitor/network": "^7.0.4",
     "@capacitor/share": "^7.0.4",
     "@capgo/capacitor-native-biometric": "^7.6.0",
-    "mori-security": "file:packages/mori-security",
     "axios": "^1.16.0",
     "cheerio": "^1.2.0",
     "cors": "^2.8.6",
@@ -41,8 +40,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.4",
-    "esbuild": "^0.28.2",
-    "javascript-obfuscator": "^5.6.0"
+    "esbuild": "^0.28.2"
   },
   "overrides": {
     "tar": "7.5.21",

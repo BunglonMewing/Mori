@@ -85,7 +85,7 @@ Pre-compiled, ready-to-use packages are available for all devices on **[GitHub R
 - **Floating Download Bubble & Manager**: Non-intrusive monochrome floating bubble tracking active tasks in real-time with an aggregated progress ring, expandable dropup tray, individual task progress bars, and instant cancellation.
 - **Quick Save via Android Share Menu**: Spot a video you love? Tap **Share** in any app and select Mori to download it instantly in a neat overlay without switching apps.
 - **Multi-Link Batch Mode**: Paste several links at once and let Mori queue and download them all automatically in the background.
-- **Built-in Media Player & Preview**: Play videos, stream tracks, and browse photo carousels right inside the app before or after downloading.
+- **Built-in Custom Fullscreen Player & Preview**: Play videos, stream tracks, and browse photo carousels right inside the app with a sleek custom fullscreen player, real-time title bar, smooth seek scrubbing, double-tap seek, and mute controls.
 - **Instant Photo-to-PDF**: Combine photo galleries or multi-image posts into a single, clean PDF file for offline reading or sharing.
 - **PIN & Biometric Lock**: Protect your download history with an optional 4-digit PIN code or fingerprint / Face ID lock.
 - **Clean Folder Organization**: Files are neatly organized in standard system folders (`Movies/Mori`, `Music/Mori`, `Pictures/Mori`) for easy access in your gallery.
@@ -145,15 +145,15 @@ Mori/
 │   ├── app/src/main/
 │   │   ├── java/com/mori/downloader/
 │   │   │   ├── DownloadForegroundService.java # Background download persistent service & wake-lock
-│   │   │   ├── MainActivity.java   # Main Activity + native HTTP bridge (CORS bypass) & security key
+│   │   │   ├── MainActivity.java   # Main Activity + native HTTP bridge (CORS bypass)
 │   │   │   └── ShareActivity.java  # Native Quick Save Share overlay & MediaStore indexer
-│   │   └── jniLibs/            # Native compiled security libraries (libmorisec.so: arm64, armv7, x86_64)
+│   │   └── res/                # Android layout, drawables, XML configs & splash screens
 │   └── gradle/                 # Gradle build scripts & configurations
 ├── ios/                        # Capacitor iOS Xcode workspace
 │   └── App/                    # iOS Xcode project, Info.plist, and CocoaPods
 ├── src-tauri/                  # Tauri v2 Desktop Rust backend (macOS & Windows)
 │   ├── capabilities/           # Application permissions & security capabilities
-│   ├── src/                    # Rust native HTTP, local filesystem & security key provider
+│   ├── src/                    # Rust native HTTP & local filesystem provider
 │   └── tauri.conf.json         # Desktop app configuration & window bounds
 ├── assets/                     # App icons, mockups, & screenshots
 ├── public/                     # Frontend web assets (Vanilla JS + CSS)
@@ -161,7 +161,7 @@ Mori/
 │   │   ├── variables.css       # Design tokens, themes (dark/light), typography, glass, corner presets
 │   │   ├── base.css            # CSS reset, typography, header, dynamic greeting, bottom navigation
 │   │   ├── components.css      # Reusable buttons, custom toast, floating download bubble & dropup manager
-│   │   ├── home.css            # URL input bar, batch textarea, skeleton loader, media preview cards
+│   │   ├── home.css            # URL input bar, batch textarea, skeleton loader, media preview cards, custom fullscreen
 │   │   ├── history.css         # History layout, summary stats card, cards, actions bar, thumbnail overlay
 │   │   ├── settings.css        # Settings menu list, sub-page slide transitions, custom dropdowns
 │   │   ├── modals.css          # Modal overlays, PIN keypad, user guide, confirm & info dialogs
@@ -170,7 +170,7 @@ Mori/
 │   ├── js/
 │   │   ├── app.js              # Main application entry point & startup lifecycle
 │   │   ├── components/         # Reusable UI components
-│   │   │   └── player.js       # In-app media player (video, audio, gestures)
+│   │   │   └── player.js       # In-app media player (custom fullscreen overlay, gestures, smooth scrubbing)
 │   │   ├── downloader/         # Modular native download engine
 │   │   │   ├── filename.js     # Extension resolution, title sanitization, template & folder logic
 │   │   │   ├── headers.js      # Platform-specific Referer/Origin headers builder & URL unwrapper
@@ -198,12 +198,12 @@ Mori/
 │   │   │   │   ├── language.js   # Dropdown select engine, i18n switcher, sub-page navigation
 │   │   │   │   └── index.js      # Barrel re-export for settings sub-modules
 │   │   │   ├── settings.js     # User preferences orchestrator & backward-compatible facade
-│   │   │   └── update.js       # Automatic GitHub release update checker
+│   │   │   ├── update.js       # Automatic GitHub release update checker
+│   │   │   └── updateScrapers.js # OTA scraper hot-patch downloader & validator
 │   │   ├── scrapers/           # Scraper runtime loader & HTTP helper
 │   │   │   ├── bundle.js       # Bundled scraper core (esbuild IIFE, all 16 platforms)
 │   │   │   ├── httpHelper.js   # Unified HTTP engine (native OkHttp/Tauri bridge + UA rotation)
 │   │   │   └── index.js        # Runtime loader with OTA hot-patch support
-
 │   │   ├── ui/                 # UI rendering & presentation layer
 │   │   │   ├── downloadBubble.js # Persistent floating download bubble & dropup task manager
 │   │   │   ├── nativeDownload.js # Native download flow orchestrator & progress tracking
@@ -227,10 +227,11 @@ Mori/
 │   └── share.html              # Standalone Android Quick Save Share Overlay markup
 ├── capacitor.config.json       # Capacitor cross-platform configuration
 ├── package.json                # Project dependencies & build scripts
-
-├── .gitignore
-├── LICENSE
-└── README.md
+├── CHANGELOG.md                # Detailed version-by-version release history
+├── CONTRIBUTING.md             # Developer setup, build guidelines, & PR instructions
+├── GUIDE.md                    # In-app user manual & usage walkthrough
+├── LICENSE                     # GNU General Public License v3.0
+└── README.md                   # Primary project overview & documentation
 ```
 
 </details>

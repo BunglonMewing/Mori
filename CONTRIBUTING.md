@@ -194,11 +194,11 @@ zip -r "Mori.ipa" Payload && rm -rf Payload build
 ## ⚙️ Architecture & Scraper Engine
 
 * **Frontend**: Vanilla ES6 JavaScript + modern CSS design system located in `public/`.
-* **Scraper Runtime**: The core scraping engine runs from `public/js/scrapers.bin` and is dynamically decrypted during runtime via native handshake (`libmorisec.so` on Android, Rust machine code on Desktop).
+* **Scraper Runtime**: The core scraping engine is compiled via esbuild into `public/js/scrapers/bundle.js` as an IIFE bundle containing all 16 platform engines.
 * **HTTP Layer**: Cross-origin requests are routed through `public/js/scrapers/httpHelper.js`, utilizing native OkHttp on Android and native Rust HTTP on Desktop to bypass CORS.
 
 > [!NOTE]
-> **Scraper Core Contributions**: Because the scraper engine is distributed as an integrity-protected bytecode (`scrapers.bin`) to deter low-effort ad-injected repackaging, honest developers who wish to fix broken endpoints or suggest scraper algorithms are encouraged to discuss them in an issue or PR with the author.
+> **Scraper Core Contributions**: The scraper sources are maintained privately in `src-scrapers/` to deter low-effort ad-injected clones and scrapers abuse. The public repository runs from the precompiled `public/js/scrapers/bundle.js`. Honest developers who wish to fix broken endpoints or suggest scraper algorithms are encouraged to discuss them in an issue or PR with the author.
 
 ---
 

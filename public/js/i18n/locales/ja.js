@@ -1,5 +1,6 @@
 export default {
-  "about-text": "Moriは高速で多機能なメディアダウンローダーです。coflynによって愛を込めて作られました。",
+  "about-text":
+    "Moriは高速で多機能なメディアダウンローダーです。coflynによって愛を込めて作られました。",
   "anim-fast": "速い",
   "anim-normal": "普通",
   "anim-off": "オフ",
@@ -31,6 +32,7 @@ export default {
   "btn-confirm": "確認",
   "btn-delete": "削除",
   "btn-done": "完了",
+  "btn-download-all-photos": "すべての写真をダウンロード",
   "btn-download-all-title": "全曲一括ダウンロード",
   "btn-edit": "編集",
   "btn-open-settings": "設定を開く",
@@ -51,8 +53,10 @@ export default {
   "concurrent-3": "3同時",
   "concurrent-5": "5同時",
   "confirm-msg-default": "続行してもよろしいですか？",
-  "confirm-reset-settings": "すべての設定をデフォルトに戻しますか？履歴とダウンロードファイルは削除されません。",
-  "confirm-reset-scraper": "スクレイパーコアをアプリ同梱の初期バージョンに戻しますか？ダウンロード済みのOTAパッチは削除されます。",
+  "confirm-reset-settings":
+    "すべての設定をデフォルトに戻しますか？履歴とダウンロードファイルは削除されません。",
+  "confirm-reset-scraper":
+    "スクレイパーコアをアプリ同梱の初期バージョンに戻しますか？ダウンロード済みのOTAパッチは削除されます。",
   "confirm-title-default": "確認",
   "corner-modern": "モダン (10px)",
   "corner-round": "丸み (20px)",
@@ -62,19 +66,24 @@ export default {
   "days-7": "7日",
   "days-90": "90日",
   "days-off": "オフ",
-  "desc-all-files-access": "任意のフォルダーにメディアを保存・再生するために必要です",
-  "desc-clearcache": "スペースを解放するために一時データ（サムネイルなど）のみを削除します。ダウンロードしたファイルは安全です。続行しますか？",
-  "desc-wipedata": "警告：これにより、履歴とMoriフォルダ内のすべてのダウンロード済みファイルが完全に削除されます。ファイルを保持したい場合は、別のフォルダに移動してください。続行しますか？",
+  "desc-all-files-access":
+    "任意のフォルダーにメディアを保存・再生するために必要です",
+  "desc-clearcache":
+    "スペースを解放するために一時データ（サムネイルなど）のみを削除します。ダウンロードしたファイルは安全です。続行しますか？",
+  "desc-wipedata":
+    "警告：これにより、履歴とMoriフォルダ内のすべてのダウンロード済みファイルが完全に削除されます。ファイルを保持したい場合は、別のフォルダに移動してください。続行しますか？",
   "dl-stats-history": "履歴数",
   "dl-stats-total": "総ダウンロード数",
   "doh-cloudflare": "Cloudflare (1.1.1.1)",
   "doh-google": "Google (8.8.8.8)",
   "doh-off": "オフ（システムDNS）",
   "download-all-complete": "全${count}件のアイテムをダウンロードしました！",
-  "download-partial-complete": "${success}/${total}件ダウンロード完了 (${failed}件失敗)",
+  "download-partial-complete":
+    "${success}/${total}件ダウンロード完了 (${failed}件失敗)",
   "download-retry-failed": "失敗分を再試行 (${count})",
   "downloading-progress": "ダウンロード中...",
-  "err-yt-playlist-source": "YouTubeプレイリストは'ytmp3.gg'サーバーが必要です。",
+  "err-yt-playlist-source":
+    "YouTubeプレイリストは'ytmp3.gg'サーバーが必要です。",
   "filename-default": "デフォルト",
   "filename-title": "タイトルのみ",
   "filename-title-date": "タイトル + 日付",
@@ -87,10 +96,14 @@ export default {
   "glass-deep": "深いフロスト",
   "glass-off": "オフ (単色)",
   "glass-subtle": "控えめ",
-  "guide-step-1": "TikTok、Instagram、YouTube、Twitter/X、Douyinなど16以上の対応サイトからリンクをコピーします。",
-  "guide-step-2": "「貼り付け」（またはその隣のバッチボタン）をタップしてリンクを解析し、画質またはフォーマットを選択します。",
-  "guide-step-3": "「ダウンロード」をタップしてデバイスに直接保存します（プログレス表示付き）。",
-  "guide-step-4": "「履歴」タブでオフライン再生したり、生体認証ロックで保護することができます。",
+  "guide-step-1":
+    "TikTok、Instagram、YouTube、Twitter/X、Douyinなど16以上の対応サイトからリンクをコピーします。",
+  "guide-step-2":
+    "「貼り付け」（またはその隣のバッチボタン）をタップしてリンクを解析し、画質またはフォーマットを選択します。",
+  "guide-step-3":
+    "「ダウンロード」をタップしてデバイスに直接保存します（プログレス表示付き）。",
+  "guide-step-4":
+    "「履歴」タブでオフライン再生したり、生体認証ロックで保護することができます。",
   "guide-title": "ユーザーガイド",
   "history-desc": "最近のダウンロード",
   "history-empty": "履歴はまだありません。",
@@ -99,7 +112,7 @@ export default {
     "サポートされているプラットフォームからリンクをコピーします。",
     "Moriに戻り、貼り付けボタンをタップします。",
     "分析が完了するまで待ちます。",
-    "ダウンロードをタップして保存します。"
+    "ダウンロードをタップして保存します。",
   ],
   "label-about": "Moriについて",
   "label-anim-speed": "アニメーション速度",
@@ -124,7 +137,8 @@ export default {
   "label-cache-cleared": "キャッシュが正常に消去されました！",
   "label-cellular-warning": "モバイルデータ警告",
   "label-check-failed": "確認に失敗しました",
-  "label-check-failed-msg": "サーバーに到達できません。接続を確認してください。",
+  "label-check-failed-msg":
+    "サーバーに到達できません。接続を確認してください。",
   "label-choose-server": "サーバーを選択:",
   "label-all-files-access": "全ファイルへのアクセス",
   "label-clearcache": "キャッシュを消去",
@@ -157,6 +171,8 @@ export default {
   "label-howtouse": "使用方法",
   "label-incognito": "シークレットモード",
   "label-items-count": "${count}件",
+  "label-pages-count": "${count}ページ",
+  "label-photos-count": "${count}枚の写真",
   "label-keep-awake": "画面常時点灯",
   "label-language": "言語",
   "label-lock-type": "ロックタイプ",
@@ -222,7 +238,7 @@ export default {
     "コンテンツを収集中...",
     "ピクセルを探しています...",
     "リクエストを処理中...",
-    "もうすぐ完了です..."
+    "もうすぐ完了です...",
   ],
   "lock-type-biometric": "生体認証",
   "lock-type-none": "なし",
@@ -243,13 +259,16 @@ export default {
   "menu-storage-title": "ストレージとダウンロード",
   "modal-history-title": "履歴詳細",
   "modal-info-title": "情報",
-  "msg-cellular-warning": "現在モバイルデータ通信を使用しています。ダウンロードを続行しますか？",
-  "msg-clear-all-confirm": "すべてのダウンロード履歴を削除してもよろしいですか？",
+  "msg-cellular-warning":
+    "現在モバイルデータ通信を使用しています。ダウンロードを続行しますか？",
+  "msg-clear-all-confirm":
+    "すべてのダウンロード履歴を削除してもよろしいですか？",
   "msg-delete-item-confirm": "このアイテムを履歴から削除しますか？",
   "nav-history": "履歴",
   "nav-home": "ホーム",
   "nav-settings": "設定",
-  "notif-all-downloaded": "全${total}件のアイテムのダウンロードが完了しました。",
+  "notif-all-downloaded":
+    "全${total}件のアイテムのダウンロードが完了しました。",
   "overwrite-overwrite": "上書き",
   "overwrite-rename": "自動リネーム",
   "overwrite-skip": "スキップ",
@@ -262,7 +281,8 @@ export default {
   "pdf-toast-processing": "${count}/${total} 枚の画像を処理中...",
   "pdf-toast-saved": "PDFが ダウンロード/Mori に正常に保存されました",
   "pdf-toast-saving": "デバイスに保存中... 数秒かかる場合があります。",
-  "pdf-toast-starting": "PDF書き出しを開始中... (大きなギャラリーは時間がかかる場合があります)",
+  "pdf-toast-starting":
+    "PDF書き出しを開始中... (大きなギャラリーは時間がかかる場合があります)",
   "pin-enter-title": "4桁のPINを入力",
   "placeholder-batch-link": "複数のリンクを貼り付け（1行に1つ）...",
   "placeholder-paste-link": "ここにリンクを貼り付け...",
@@ -275,11 +295,16 @@ export default {
   "server-1": "サーバー 1 (メイン)",
   "server-2": "サーバー 2 (バックアップ)",
   "server-ask": "毎回確認",
-  "server-desc-instagram": "サーバー 1: InDown (マルチ画質 MP4 / 写真)\nサーバー 2: SaveVid (高速 MP4 / ストーリー / リール)",
-  "server-desc-spotify": "サーバー 1: SpotiDown (プレイリスト＆単曲)\nサーバー 2: SoundLoaders (プレイリスト＆単曲)",
-  "server-desc-tiktok": "サーバー 1: TikTokIO (HD動画・MP3・スライドショー)\nサーバー 2: TikDownloader (1080pフルHD・MP3・スライドショー)",
-  "server-desc-twitter": "サーバー 1: TVD (フルHD 1080p・720p・マルチ解像度)\nサーバー 2: SaveTWT (HD MP4・マルチ解像度)",
-  "server-desc-youtube": "サーバー 1: YTMP3.gg (マルチ解像度 1080p - 360p + MP3)\nサーバー 2: YTMP3.mobi (高速＆安定 MP4 / MP3)",
+  "server-desc-instagram":
+    "サーバー 1: InDown (マルチ画質 MP4 / 写真)\nサーバー 2: SaveVid (高速 MP4 / ストーリー / リール)",
+  "server-desc-spotify":
+    "サーバー 1: SpotiDown (プレイリスト＆単曲)\nサーバー 2: SoundLoaders (プレイリスト＆単曲)",
+  "server-desc-tiktok":
+    "サーバー 1: TikTokIO (HD動画・MP3・スライドショー)\nサーバー 2: TikDownloader (1080pフルHD・MP3・スライドショー)",
+  "server-desc-twitter":
+    "サーバー 1: TVD (フルHD 1080p・720p・マルチ解像度)\nサーバー 2: SaveTWT (HD MP4・マルチ解像度)",
+  "server-desc-youtube":
+    "サーバー 1: YTMP3.gg (マルチ解像度 1080p - 360p + MP3)\nサーバー 2: YTMP3.mobi (高速＆安定 MP4 / MP3)",
   "settings-desc": "アプリの設定",
   "shape-bubbles": "泡",
   "shape-fireflies": "ホタル",
@@ -293,7 +318,8 @@ export default {
   "share-err-failed": "リンクの解析に失敗しました。",
   "share-err-no-links": "ダウンロードリンクが見つかりませんでした。",
   "share-err-unsupported": "サポートされていないプラットフォームのリンクです。",
-  "share-msg": "どこからでもメディアをダウンロードできる素晴らしいアプリ、Moriをチェックしてください！ https://github.com/coflyn/Mori",
+  "share-msg":
+    "どこからでもメディアをダウンロードできる素晴らしいアプリ、Moriをチェックしてください！ https://github.com/coflyn/Mori",
   "share-panel-sub": "メディアの設定とダウンロード",
   "share-panel-title": "Mori クイック保存",
   "sound-chime": "モダンチャイム",
@@ -354,7 +380,8 @@ export default {
   "toast-clipboard-empty": "クリップボードが空です",
   "toast-compact-off": "コンパクトモード無効",
   "toast-compact-on": "コンパクトモード有効",
-  "toast-connection-lost": "接続が切断されました。インターネットを確認してください。",
+  "toast-connection-lost":
+    "接続が切断されました。インターネットを確認してください。",
   "toast-copy-failed": "コピーに失敗しました",
   "toast-copy-success": "クリップボードにコピーしました",
   "toast-darkmode-off": "ライトモードが有効になりました",
@@ -394,7 +421,8 @@ export default {
   "toast-privacy-on": "プライバシーロックが有効になりました",
   "toast-reset-settings": "設定をデフォルトにリセットしました",
   "toast-saved": "保存完了:",
-  "toast-share-not-supported": "このブラウザでは共有機能がサポートされていません。",
+  "toast-share-not-supported":
+    "このブラウザでは共有機能がサポートされていません。",
   "toast-sound-off": "完了音が無効になりました",
   "toast-sound-on": "完了音が有効になりました",
   "toast-storage-error": "ストレージエラー：空き容量を確認してください。",
@@ -405,5 +433,5 @@ export default {
   "ua-chrome": "モバイル Chrome",
   "ua-default": "デフォルト",
   "ua-desktop": "デスクトップ Chrome",
-  "ua-safari": "iOS Safari"
+  "ua-safari": "iOS Safari",
 };

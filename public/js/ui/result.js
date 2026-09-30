@@ -20,6 +20,7 @@ import {
   setSlideData,
 } from "../modules/core.js";
 import { startNativeDownload } from "./nativeDownload.js";
+import { downloadBubble } from "./downloadBubble.js";
 import { escapeHtml } from "../ui.js";
 
 export function renderMediaSlides(container, items, resultThumbnail) {
@@ -717,6 +718,7 @@ export function renderResult(result, originalUrl) {
       type.includes("PAGE") ||
       type.includes("IMAGE") ||
       type.includes("PHOTO") ||
+      type.includes("SLIDE") ||
       url.match(/\.(jpg|jpeg|png|webp)/);
     const isVideo =
       type.includes("VIDEO") ||
@@ -727,30 +729,6 @@ export function renderResult(result, originalUrl) {
   });
 
   const isGallery = !isSinglePreview && imageItems.length >= 2;
-
-  if (isGallery) {
-    const pdfBtn = document.createElement("button");
-    pdfBtn.className = "pdf-btn";
-    const label =
-      imageItems.length === sliderItems.length
-        ? translations[currentLang]["pdf-btn-gallery"]
-        : translations[currentLang]["pdf-btn-images"];
-    const infoText =
-      imageItems.length === sliderItems.length
-        ? `${imageItems.length} ${translations[currentLang]["pdf-pages"]}`
-        : `${imageItems.length} ${translations[currentLang]["pdf-images-detected"]}`;
-
-    pdfBtn.innerHTML = `
-      <div class="option-info">
-        <span class="option-type">${label}</span>
-        <span class="option-size">${infoText}</span>
-      </div>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="20" height="20" fill="currentColor">
-        <path d="M13.156 9.211c-.213-.21-.686-.321-1.406-.331a11.754 11.754 0 0 0-1.69.124c-.276-.159-.561-.333-.784-.542-.601-.561-1.103-1.34-1.415-2.197.02-.08.038-.15.054-.222 0 0 .339-1.923.249-2.573a.73.73 0 0 0-.044-.184l-.029-.076c-.092-.212-.273-.437-.556-.425l-.171-.005c-.316 0-.573.161-.64.403-.205.757.007 1.889.39 3.355l-.098.239c-.275.67-.619 1.345-.923 1.94l-.04.077c-.32.626-.61 1.157-.873 1.607l-.271.144c-.02.01-.485.257-.594.323-.926.553-1.539 1.18-1.641 1.678-.032.159-.008.362.156.456l.263.132a.792.792 0 0 0 .357.086c.659 0 1.425-.821 2.48-2.662a24.79 24.79 0 0 1 3.819-.908c.926.521 2.065.883 2.783.883.128 0 .238-.012.327-.036a.558.558 0 0 0 .325-.222c.139-.21.168-.499.13-.795a.531.531 0 0 0-.157-.271zM3.307 12.72c.12-.329.596-.979 1.3-1.556.044-.036.153-.138.253-.233-.736 1.174-1.229 1.642-1.553 1.788zm4.169-9.6c.212 0 .333.534.343 1.035s-.107.853-.252 1.113c-.12-.385-.179-.992-.179-1.389 0 0-.009-.759.088-.759zM6.232 9.961c.148-.264.301-.543.458-.839.383-.724.624-1.29.804-1.755a5.813 5.813 0 0 0 1.328 1.649c.065.055.135.111.207.166-1.066.211-1.987.467-2.798.779zm6.72-.06c-.065.041-.251.064-.37.064-.386 0-.864-.176-1.533-.464.257-.019.493-.029.705-.029.387 0 .502-.002.88.095s.383.293.318.333z"/><path d="M14.341 3.579c-.347-.473-.831-1.027-1.362-1.558S11.894 1.006 11.421.659C10.615.068 10.224 0 10 0H2.25C1.561 0 1 .561 1 1.25v13.5c0 .689.561 1.25 1.25 1.25h11.5c.689 0 1.25-.561 1.25-1.25V5c0-.224-.068-.615-.659-1.421zm-2.07-.85c.48.48.856.912 1.134 1.271h-2.406V1.595c.359.278.792.654 1.271 1.134zM14 14.75c0 .136-.114.25-.25.25H2.25a.253.253 0 0 1-.25-.25V1.25c0-.135.115-.25.25-.25H10v3.5a.5.5 0 0 0 .5.5H14v9.75z"/></svg>
-    `;
-    pdfBtn.onclick = () => exportGalleryToPdf(result.title, imageItems);
-    downloadList.appendChild(pdfBtn);
-  }
 
   let cleanTitleText = (
     result.title || translations[currentLang]["label-content"]
@@ -778,6 +756,8 @@ export function renderResult(result, originalUrl) {
       return (
         t.includes("PHOTO") ||
         t.includes("IMAGE") ||
+        t.includes("SLIDE") ||
+        t.includes("PAGE") ||
         /\.(jpg|jpeg|png|webp)/i.test(u)
       );
     });
@@ -788,19 +768,33 @@ export function renderResult(result, originalUrl) {
     let titleText = "";
     let countText = "";
 
-    if (
-      isMultiTrackContent &&
+    const isMultiItem =
+      (isMultiTrackContent || isMultiPhoto) &&
       result.downloads &&
-      result.downloads.length >= 2
-    ) {
+      result.downloads.length >= 2;
+
+    if (isMultiItem) {
       allBtn = document.createElement("button");
       allBtn.className = "dl-item dl-all-btn";
 
-      titleText =
-        translations[currentLang]["btn-download-all-title"] || "Download All";
-      const rawCountText =
-        translations[currentLang]["label-items-count"] || "${count} Items";
-      countText = rawCountText.replace("${count}", result.downloads.length);
+      if (isMultiPhoto && !isMultiTrackContent) {
+        titleText =
+          translations[currentLang]["btn-download-all-photos"] ||
+          translations[currentLang]["batch-photo-all"] ||
+          translations[currentLang]["btn-download-all-title"] ||
+          "Download All Photos";
+        const rawPhotoCount =
+          translations[currentLang]["label-photos-count"] ||
+          translations[currentLang]["label-items-count"] ||
+          "${count} Photos";
+        countText = rawPhotoCount.replace("${count}", result.downloads.length);
+      } else {
+        titleText =
+          translations[currentLang]["btn-download-all-title"] || "Download All";
+        const rawCountText =
+          translations[currentLang]["label-items-count"] || "${count} Items";
+        countText = rawCountText.replace("${count}", result.downloads.length);
+      }
 
       allBtn.innerHTML = `
         <div class="dl-all-left">
@@ -898,12 +892,15 @@ export function renderResult(result, originalUrl) {
 
                 let dlResult = null;
                 try {
-                  let trackTitle = result.title;
+                  let baseTitle = (result.title || "").trim() || "Media";
+                  let trackTitle = baseTitle;
                   const isTrack = /^\d+\.\s+/.test(cleanLabel);
                   if (isTrack) {
                     trackTitle = cleanLabel.replace(/^\d+\.\s+/, "");
                   } else if (isMultiPhoto && photoDownloads.includes(item)) {
-                    trackTitle = `${result.title}_${photoDownloads.indexOf(item) + 1}`;
+                    trackTitle = `${baseTitle}_${photoDownloads.indexOf(item) + 1}`;
+                  } else if (isMultiPhoto) {
+                    trackTitle = `${baseTitle}_${cleanLabel || (i + 1)}`;
                   }
                   dlResult = await startNativeDownload(
                     item.url,
@@ -1051,6 +1048,34 @@ export function renderResult(result, originalUrl) {
       downloadList.appendChild(allBtn);
     }
 
+    if (isGallery) {
+      const pdfBtn = document.createElement("button");
+      pdfBtn.className = "pdf-btn";
+      const label =
+        imageItems.length === sliderItems.length
+          ? translations[currentLang]["pdf-btn-gallery"]
+          : translations[currentLang]["pdf-btn-images"];
+      const rawPageCount =
+        translations[currentLang]["label-pages-count"] ||
+        `${imageItems.length} ${translations[currentLang]["pdf-pages"]}`;
+      const infoText =
+        imageItems.length === sliderItems.length
+          ? rawPageCount.replace("${count}", imageItems.length)
+          : `${imageItems.length} ${translations[currentLang]["pdf-images-detected"]}`;
+
+      pdfBtn.innerHTML = `
+        <div class="option-info">
+          <span class="option-type">${escapeHtml(label)}</span>
+          <span class="option-size">${escapeHtml(infoText)}</span>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="20" height="20" fill="currentColor">
+          <path d="M13.156 9.211c-.213-.21-.686-.321-1.406-.331a11.754 11.754 0 0 0-1.69.124c-.276-.159-.561-.333-.784-.542-.601-.561-1.103-1.34-1.415-2.197.02-.08.038-.15.054-.222 0 0 .339-1.923.249-2.573a.73.73 0 0 0-.044-.184l-.029-.076c-.092-.212-.273-.437-.556-.425l-.171-.005c-.316 0-.573.161-.64.403-.205.757.007 1.889.39 3.355l-.098.239c-.275.67-.619 1.345-.923 1.94l-.04.077c-.32.626-.61 1.157-.873 1.607l-.271.144c-.02.01-.485.257-.594.323-.926.553-1.539 1.18-1.641 1.678-.032.159-.008.362.156.456l.263.132a.792.792 0 0 0 .357.086c.659 0 1.425-.821 2.48-2.662a24.79 24.79 0 0 1 3.819-.908c.926.521 2.065.883 2.783.883.128 0 .238-.012.327-.036a.558.558 0 0 0 .325-.222c.139-.21.168-.499.13-.795a.531.531 0 0 0-.157-.271zM3.307 12.72c.12-.329.596-.979 1.3-1.556.044-.036.153-.138.253-.233-.736 1.174-1.229 1.642-1.553 1.788zm4.169-9.6c.212 0 .333.534.343 1.035s-.107.853-.252 1.113c-.12-.385-.179-.992-.179-1.389 0 0-.009-.759.088-.759zM6.232 9.961c.148-.264.301-.543.458-.839.383-.724.624-1.29.804-1.755a5.813 5.813 0 0 0 1.328 1.649c.065.055.135.111.207.166-1.066.211-1.987.467-2.798.779zm6.72-.06c-.065.041-.251.064-.37.064-.386 0-.864-.176-1.533-.464.257-.019.493-.029.705-.029.387 0 .502-.002.88.095s.383.293.318.333z"/><path d="M14.341 3.579c-.347-.473-.831-1.027-1.362-1.558S11.894 1.006 11.421.659C10.615.068 10.224 0 10 0H2.25C1.561 0 1 .561 1 1.25v13.5c0 .689.561 1.25 1.25 1.25h11.5c.689 0 1.25-.561 1.25-1.25V5c0-.224-.068-.615-.659-1.421zm-2.07-.85c.48.48.856.912 1.134 1.271h-2.406V1.595c.359.278.792.654 1.271 1.134zM14 14.75c0 .136-.114.25-.25.25H2.25a.253.253 0 0 1-.25-.25V1.25c0-.135.115-.25.25-.25H10v3.5a.5.5 0 0 0 .5.5H14v9.75z"/>
+        </svg>
+      `;
+      pdfBtn.onclick = () => exportGalleryToPdf(result.title, imageItems);
+      downloadList.appendChild(pdfBtn);
+    }
+
     result.downloads.forEach((dl, index) => {
       const btn = document.createElement("button");
       btn.className = "dl-item";
@@ -1119,9 +1144,10 @@ export function renderResult(result, originalUrl) {
   return { slideData, currentSlideIndex };
 }
 export async function exportGalleryToPdf(title, items) {
-  try {
-    showToast(translations[currentLang]["pdf-toast-starting"]);
+  const pdfDlId = `pdf_${Date.now()}`;
+  let pdfCancelled = false;
 
+  try {
     // Acquire Wake Lock & Start Native Foreground Service for background protection
     if (typeof requestWakeLock === "function") requestWakeLock();
     if (window.MoriMainBridge?.startDownloadService) {
@@ -1129,6 +1155,16 @@ export async function exportGalleryToPdf(title, items) {
         window.MoriMainBridge.startDownloadService("Exporting PDF Gallery...");
       } catch (e) {}
     }
+
+    downloadBubble.addDownload({
+      id: pdfDlId,
+      title: `${(title || "Gallery").replace(/[^\w\s]/gi, "").trim()} (PDF)`,
+      platform: "PDF",
+      type: `${items.length} ${translations[currentLang]["pdf-pages"] || "Pages"}`,
+      onCancel: () => {
+        pdfCancelled = true;
+      },
+    });
 
     const { PDFDocument } = window.PDFLib;
     const pdfDoc = await PDFDocument.create();
@@ -1138,6 +1174,7 @@ export async function exportGalleryToPdf(title, items) {
     let processedCount = 0;
 
     for (let i = 0; i < items.length; i += chunkSize) {
+      if (pdfCancelled) break;
       const chunk = items.slice(i, i + chunkSize);
       const downloadPromises = chunk.map((item) => {
         let referer = "https://www.google.com/";
@@ -1292,23 +1329,29 @@ export async function exportGalleryToPdf(title, items) {
           const page = pdfDoc.addPage([width, height]);
           page.drawImage(image, { x: 0, y: 0, width, height });
           processedCount++;
-
-          if (processedCount % 5 === 0 || processedCount === items.length) {
-            let msg = translations[currentLang]["pdf-toast-processing"]
-              .replace("${count}", processedCount)
-              .replace("${total}", items.length);
-            showToast(msg);
-          }
+          downloadBubble.updateProgress(
+            pdfDlId,
+            Math.round((processedCount / items.length) * 100),
+            `${processedCount}/${items.length} ${translations[currentLang]["pdf-pages"] || "pages"}`,
+          );
         } catch (e) {
           console.error(`Page ${itemIndex + 1} failed:`, e);
         }
       }
     }
 
+    if (pdfCancelled) {
+      downloadBubble.cancelDownload(pdfDlId);
+      showToast(
+        translations[currentLang]["toast-download-cancelled"] ||
+          "Download cancelled",
+      );
+      return;
+    }
+
     if (processedCount === 0)
       throw new Error(translations[currentLang]["pdf-error-no-images"]);
 
-    showToast(translations[currentLang]["pdf-toast-finalizing"]);
     const pdfBytes = await pdfDoc.save();
 
     const fileName = `${(title || "Gallery").replace(/[^\w\s]/gi, "").trim()}_${Date.now()}.pdf`;
@@ -1395,8 +1438,6 @@ export async function exportGalleryToPdf(title, items) {
     const targetPdfPath = `${targetFolder}/${fileName}`;
 
     if (window.Capacitor?.isNativePlatform?.()) {
-      showToast(translations[currentLang]["pdf-toast-saving"]);
-
       const blob = new Blob([pdfBytes], { type: "application/pdf" });
       const reader = new FileReader();
       reader.onloadend = async () => {
@@ -1409,6 +1450,10 @@ export async function exportGalleryToPdf(title, items) {
             recursive: true,
           });
           showToast(translations[currentLang]["pdf-toast-saved"]);
+          downloadBubble.completeDownload(
+            pdfDlId,
+            translations[currentLang]["status-saved"] || "Saved",
+          );
 
           if (window.MoriMainBridge?.showCompleteNotification) {
             try {
@@ -1421,10 +1466,16 @@ export async function exportGalleryToPdf(title, items) {
         } catch (fsErr) {
           console.error("FS Error:", fsErr);
           showToast(translations[currentLang]["toast-storage-error"]);
+          downloadBubble.failDownload(
+            pdfDlId,
+            fsErr?.message || "Storage error",
+          );
         }
       };
-      reader.onerror = () =>
+      reader.onerror = () => {
         showToast(translations[currentLang]["toast-memory-error"]);
+        downloadBubble.failDownload(pdfDlId, "Memory error");
+      };
       reader.readAsDataURL(blob);
     } else {
       const tauriInvoke =
@@ -1446,6 +1497,10 @@ export async function exportGalleryToPdf(title, items) {
             translations[currentLang]["pdf-toast-saved"] ||
               "PDF saved to Mori folder!",
           );
+          downloadBubble.completeDownload(
+            pdfDlId,
+            translations[currentLang]["status-saved"] || "Saved",
+          );
         } catch (e) {
           console.warn(
             "Tauri save PDF failed, falling back to browser download:",
@@ -1461,10 +1516,15 @@ export async function exportGalleryToPdf(title, items) {
         link.download = fileName;
         link.click();
         showToast(translations[currentLang]["toast-pdf-downloaded"]);
+        downloadBubble.completeDownload(
+          pdfDlId,
+          translations[currentLang]["status-saved"] || "Saved",
+        );
       }
     }
   } catch (err) {
     console.error("PDF Export failed", err);
+    downloadBubble.failDownload(pdfDlId, err?.message || "Failed");
     showToast(
       translations[currentLang]["label-error"] +
         ": " +

@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [4.4.0] - 2026-10-01
+
+### Added
+
+- **Custom Fullscreen Video Player**: Replaced native WebView fullscreen with a custom cross-platform in-app player featuring header title display with overflow truncation, dual-function mute/fullscreen toggle, 60fps smooth scrubbing on progress seek, DOM portal reparenting to escape clipping containers, and Android hardware back button / Desktop `Escape` key listeners.
+- **Batch Photo Download & PDF Export**: Concurrently download all photos in carousels and slideshows (Instagram, TikTok, Pixiv, Douyin, RedNote) or compile them into a formatted PDF document with live download bubble tracking.
+- **Reddit & TeraBox Platform Support**: Expanded supported platforms to 16 with RapidSave Reddit extraction (video with audio, tracks, photos) and Sechno TeraBox folder and file extraction with streaming.
+- **Persistent Monochrome Floating Download Bubble**: Expandable bottom-left dropup manager tracking up to 5 concurrent downloads with live progress rings, individual cancel actions, and auto-dismissal on completion.
+- **Concurrent Download Pool**: Full concurrent download pool (up to 5 concurrent for photos/files, up to 3 for audio/video playlists) with safe rate-limit pacing.
+
+### Changed
+
+- **Scraper Engine Architecture**: Removed binary encryption and obfuscation overhead in favor of plain bundled JavaScript (`bundle.js`) compiled via esbuild, while preserving OTA hot-patching.
+- **Spotify Engine Provider**: Migrated Server 2 (SoundLoaders) to the active `spotimate.app` backend with multipart token authentication and automatic fallback to SpotiDown.
+- **Legacy Toast Purge**: Removed obsolete floating progress toast DOM elements and CSS in favor of the new download bubble manager.
+
+### Fixed
+
+- **Threads Downloader**: Resolved payload serialization mismatch on Android native bridges, added `Origin` headers, and preserved direct `acxcdn.com` streaming to prevent Instagram 403 Forbidden errors.
+- **YTMP3 Downloader**: Separated format conversions into sequential calls to avoid single-use signature expiration, added cache-busting queries, and handled conversion redirect loops.
+- **Bandcamp Downloader**: Migrated to dynamic `/get/token` API and standard multipart form submissions.
+- **Multi-Photo Overwrite Collision**: Appended slide index (`_${photoIdx}`) to filenames and unique temp file names (`.tmp`) to prevent file overwrite collisions during 1-by-1 downloads.
+- **History Multi-Photo Previews**: Fixed duplicate slide preview in History modal where Image 1 was mistakenly repeated across all slide previews.
+- **History Card Thumbnails**: Fixed broken thumbnail icons on History cards for downloaded multi-photo sets via Capacitor URI mapping.
+- **Offline History Playback**: Enforced strictly offline media playback, suppressing remote network fallback and remote poster requests when viewing downloaded items.
+- **False Missing File Status**: Guarded `showMissingStatus()` in result modals to prevent false missing warnings on un-downloaded items.
+- **Nested Directory Prefix**: Resolved duplicate directory prefixes (`Download/Download/Mori` -> `Download/Mori`) in PDF export and temp file cleanup.
+
+---
+
 ## [4.3.3] - 2026-09-20
 
 ### Added

@@ -119,6 +119,8 @@ export function createVideoPlayer(dl, index, resultThumbnail) {
   let userPaused = false;
   let unmuteIcon = null;
   let muteIcon = null;
+  let isTransitioningFs = false;
+  let isDragging = false;
 
   const isSlideActive = () => {
     if (video._isStopped) return false;
@@ -384,7 +386,11 @@ export function createVideoPlayer(dl, index, resultThumbnail) {
 
   playerContainer.classList.add("mori-loading");
 
-  video.onwaiting = () => playerContainer.classList.add("mori-loading");
+  video.onwaiting = () => {
+    if (isTransitioningFs || isDragging) return;
+    playerContainer.classList.add("mori-loading");
+  };
+  video.onseeked = removeLoading;
   video.onplaying = removeLoading;
   video.oncanplay = () => {
     removeLoading();
@@ -630,44 +636,179 @@ export function createVideoPlayer(dl, index, resultThumbnail) {
   const controls = document.createElement("div");
   controls.className = "mori-player-controls";
   controls.innerHTML = `
-    <div class="mori-player-progress">
-      <div class="mori-player-progress-inner"></div>
-    </div>
-    <div class="mori-player-bottom">
-      <div class="mori-player-actions">
-        <button class="mori-player-btn play-toggle">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" class="play-icon"><path d="M8 5v14l11-7z"/></svg>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" class="pause-icon hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-        </button>
-        <span class="mori-player-time">0:00 / 0:00</span>
+    <div class="mori-player-bar">
+      <button class="mori-player-btn play-toggle" title="Play/Pause">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" class="play-icon"><path d="M8 5v14l11-7z"/></svg>
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" class="pause-icon hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      </button>
+      <span class="mori-player-cur">0:00</span>
+      <div class="mori-player-progress">
+        <div class="mori-player-progress-inner"></div>
       </div>
-      <div class="mori-player-actions">
-        <button class="mori-player-btn mute-toggle">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" class="unmute-icon"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" class="mute-icon hidden"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.58.45-1.24.8-1.95.99v2.06c1.26-.26 2.4-.83 3.37-1.62l3.06 3.06L21 21.73l-16.73-16.73zM12 4L9.91 6.09 12 8.18V4z"/></svg>
-        </button>
-        <button class="mori-player-btn fullscreen-btn">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
-        </button>
-      </div>
+      <span class="mori-player-dur">0:00</span>
+      <button class="mori-player-btn action-right-btn" title="Fullscreen">
+        <svg class="fs-enter-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+        <svg class="unmute-icon hidden" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+        <svg class="mute-icon hidden" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.58.45-1.24.8-1.95.99v2.06c1.26-.26 2.4-.83 3.37-1.62l3.06 3.06L21 21.73l-16.73-16.73zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+      </button>
     </div>
   `;
   playerContainer.appendChild(controls);
+
+  // Fullscreen top header: Title on the left, Close button on the right
+  const fsTop = document.createElement("div");
+  fsTop.className = "mori-player-fs-top";
+
+  const fsTitle = document.createElement("div");
+  fsTitle.className = "mori-player-fs-title";
+  fsTitle.textContent = dl.title || dl.filename || "";
+
+  const fsCloseBtn = document.createElement("button");
+  fsCloseBtn.className = "mori-player-fs-close";
+  fsCloseBtn.title = "Close";
+  fsCloseBtn.setAttribute("aria-label", "Close fullscreen");
+  fsCloseBtn.innerHTML = `<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`;
+
+  fsTop.appendChild(fsTitle);
+  fsTop.appendChild(fsCloseBtn);
+  playerContainer.appendChild(fsTop);
 
   // JS Logic for this player
   const playBtn = controls.querySelector(".play-toggle");
   const playIcon = playBtn.querySelector(".play-icon");
   const pauseIcon = playBtn.querySelector(".pause-icon");
-  const timeDisplay = controls.querySelector(".mori-player-time");
+  const curDisplay = controls.querySelector(".mori-player-cur");
+  const durDisplay = controls.querySelector(".mori-player-dur");
   const prog = controls.querySelector(".mori-player-progress");
   const progInner = controls.querySelector(".mori-player-progress-inner");
-  const muteBtn = controls.querySelector(".mute-toggle");
-  unmuteIcon = muteBtn.querySelector(".unmute-icon");
-  muteIcon = muteBtn.querySelector(".mute-icon");
-  const fsBtn = controls.querySelector(".fullscreen-btn");
-  if (isDesktop && fsBtn) {
-    fsBtn.style.display = "none";
-  }
+
+  const rightBtn = controls.querySelector(".action-right-btn");
+  const fsEnterIcon = rightBtn?.querySelector(".fs-enter-icon");
+  unmuteIcon = rightBtn?.querySelector(".unmute-icon");
+  muteIcon = rightBtn?.querySelector(".mute-icon");
+
+  const updateAudioIcons = () => {
+    if (!rightBtn) return;
+    if (playerContainer.classList.contains("mori-fullscreen")) {
+      fsEnterIcon?.classList.add("hidden");
+      rightBtn.title = video.muted ? "Unmute" : "Mute";
+      if (video.muted) {
+        unmuteIcon?.classList.add("hidden");
+        muteIcon?.classList.remove("hidden");
+      } else {
+        unmuteIcon?.classList.remove("hidden");
+        muteIcon?.classList.add("hidden");
+      }
+    } else {
+      fsEnterIcon?.classList.remove("hidden");
+      unmuteIcon?.classList.add("hidden");
+      muteIcon?.classList.add("hidden");
+      rightBtn.title = "Fullscreen";
+    }
+  };
+
+  const handleKeydown = (e) => {
+    if (!playerContainer.classList.contains("mori-fullscreen")) return;
+    if (e.key === "Escape") {
+      exitCustomFullscreen();
+    }
+  };
+  window.addEventListener("keydown", handleKeydown);
+
+  rightBtn.onclick = (e) => {
+    e.stopPropagation();
+    if (playerContainer.classList.contains("mori-fullscreen")) {
+      video.muted = !video.muted;
+      updateAudioIcons();
+    } else {
+      enterCustomFullscreen();
+    }
+  };
+
+  const StatusBar = window.Capacitor?.Plugins?.StatusBar;
+  let fsPlaceholder = null;
+
+  const enterCustomFullscreen = () => {
+    if (playerContainer.classList.contains("mori-fullscreen")) return;
+
+    isTransitioningFs = true;
+    setTimeout(() => {
+      isTransitioningFs = false;
+    }, 400);
+
+    fsPlaceholder = document.createElement("div");
+    fsPlaceholder.className = "mori-player-fs-placeholder";
+    fsPlaceholder.style.display = "none";
+    if (playerContainer.parentNode) {
+      playerContainer.parentNode.insertBefore(fsPlaceholder, playerContainer);
+    }
+
+    const wasPaused = video.paused;
+    const curTime = video.currentTime;
+
+    document.body.appendChild(playerContainer);
+    playerContainer.classList.add("mori-fullscreen");
+    updateAudioIcons();
+    document.body.classList.add("mori-has-fullscreen");
+
+    StatusBar?.hide?.().catch?.(() => {});
+
+    if (!isNaN(curTime) && curTime > 0 && Math.abs(video.currentTime - curTime) > 0.5) {
+      try {
+        video.currentTime = curTime;
+      } catch (_) {}
+    }
+    if (!wasPaused && video.paused) {
+      video.play().catch(() => {});
+    }
+
+    playerContainer.classList.add("touching");
+    clearTimeout(hideTimeout);
+    hideTimeout = setTimeout(
+      () => playerContainer.classList.remove("touching"),
+      2500,
+    );
+  };
+
+  const exitCustomFullscreen = () => {
+    if (!playerContainer.classList.contains("mori-fullscreen")) return;
+
+    isTransitioningFs = true;
+    setTimeout(() => {
+      isTransitioningFs = false;
+    }, 400);
+
+    playerContainer.classList.remove("mori-fullscreen");
+    updateAudioIcons();
+    document.body.classList.remove("mori-has-fullscreen");
+
+    StatusBar?.show?.().catch?.(() => {});
+
+    const wasPaused = video.paused;
+    const curTime = video.currentTime;
+
+    if (fsPlaceholder && fsPlaceholder.parentNode) {
+      fsPlaceholder.parentNode.insertBefore(playerContainer, fsPlaceholder);
+      fsPlaceholder.remove();
+      fsPlaceholder = null;
+    }
+
+    if (!isNaN(curTime) && curTime > 0 && Math.abs(video.currentTime - curTime) > 0.5) {
+      try {
+        video.currentTime = curTime;
+      } catch (_) {}
+    }
+    if (!wasPaused && video.paused) {
+      video.play().catch(() => {});
+    }
+  };
+
+  playerContainer._exitFullscreen = exitCustomFullscreen;
+
+  fsCloseBtn.onclick = (e) => {
+    e.stopPropagation();
+    exitCustomFullscreen();
+  };
 
   const formatTime = (s) => {
     if (!s || isNaN(s)) return "0:00";
@@ -678,9 +819,11 @@ export function createVideoPlayer(dl, index, resultThumbnail) {
 
   let lastShowTime = 0;
   const updateProgress = () => {
+    if (isDragging) return;
     const p = (video.currentTime / (video.duration || 1)) * 100;
     progInner.style.width = `${p}%`;
-    timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+    if (curDisplay) curDisplay.textContent = formatTime(video.currentTime);
+    if (durDisplay) durDisplay.textContent = formatTime(video.duration);
   };
 
   video.onplay = () => {
@@ -722,43 +865,55 @@ export function createVideoPlayer(dl, index, resultThumbnail) {
     playerContainer.style.aspectRatio = "auto";
   };
 
-  muteBtn.onclick = (e) => {
-    e.stopPropagation();
-    video.muted = !video.muted;
-    unmuteIcon.classList.toggle("hidden", video.muted);
-    muteIcon.classList.toggle("hidden", !video.muted);
-  };
 
-  fsBtn.onclick = (e) => {
-    e.stopPropagation();
-    if (video.requestFullscreen) {
-      video.requestFullscreen();
-    } else if (video.webkitRequestFullscreen) {
-      video.webkitRequestFullscreen();
-    } else if (video.msRequestFullscreen) {
-      video.msRequestFullscreen();
-    }
-  };
 
-  const seekToPos = (clientX) => {
+
+  let dragTargetTime = 0;
+  let wasPausedBeforeDrag = false;
+
+  const seekToPos = (clientX, commit = false) => {
     const rect = prog.getBoundingClientRect();
+    if (!rect.width) return;
     let pos = (clientX - rect.left) / rect.width;
     pos = Math.max(0, Math.min(1, pos));
-    video.currentTime = pos * (video.duration || 0);
-  };
-
-  let isDragging = false;
-  const startDrag = (e) => {
-    isDragging = true;
-    seekToPos(e.clientX || e.touches[0].clientX);
-  };
-  const doDrag = (e) => {
-    if (isDragging) {
-      seekToPos(e.clientX || e.touches[0].clientX);
+    dragTargetTime = pos * (video.duration || 0);
+    progInner.style.width = `${pos * 100}%`;
+    if (curDisplay) curDisplay.textContent = formatTime(dragTargetTime);
+    if (commit) {
+      video.currentTime = dragTargetTime;
     }
   };
-  const stopDrag = () => {
+
+  const startDrag = (e) => {
+    isDragging = true;
+    wasPausedBeforeDrag = video.paused;
+    const clientX = e.clientX ?? e.touches?.[0]?.clientX;
+    if (clientX !== undefined) {
+      seekToPos(clientX, false);
+    }
+  };
+
+  const doDrag = (e) => {
+    if (isDragging) {
+      const clientX = e.clientX ?? e.touches?.[0]?.clientX;
+      if (clientX !== undefined) {
+        seekToPos(clientX, false);
+      }
+    }
+  };
+
+  const stopDrag = (e) => {
+    if (!isDragging) return;
     isDragging = false;
+    const clientX = e?.clientX ?? e?.changedTouches?.[0]?.clientX;
+    if (clientX !== undefined) {
+      seekToPos(clientX, true);
+    } else {
+      video.currentTime = dragTargetTime;
+    }
+    if (!wasPausedBeforeDrag && video.paused) {
+      video.play().catch(() => {});
+    }
   };
 
   prog.addEventListener("mousedown", startDrag);
@@ -846,6 +1001,10 @@ export function createVideoPlayer(dl, index, resultThumbnail) {
 
   // Return cleanup function to remove window listeners when player is destroyed
   playerContainer._cleanup = () => {
+    if (playerContainer.classList.contains("mori-fullscreen")) {
+      exitCustomFullscreen();
+    }
+    window.removeEventListener("keydown", handleKeydown);
     window.removeEventListener("mousemove", doDrag);
     window.removeEventListener("mouseup", stopDrag);
     window.removeEventListener("touchmove", doDrag);

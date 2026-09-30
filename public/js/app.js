@@ -354,6 +354,14 @@ if (
   typeof App.addListener === "function"
 ) {
   App.addListener("backButton", () => {
+    const fsPlayer = document.querySelector(
+      ".mori-player-container.mori-fullscreen",
+    );
+    if (fsPlayer && typeof fsPlayer._exitFullscreen === "function") {
+      fsPlayer._exitFullscreen();
+      return;
+    }
+
     const openModal = document.querySelector(".modal-overlay:not(.hidden)");
     if (openModal) {
       openModal.classList.add("hidden");

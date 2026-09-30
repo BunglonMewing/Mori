@@ -100,6 +100,12 @@ infoOverlay?.addEventListener("click", (e) => {
 // Modal close handling (delegated to this module)
 export const hideModal = () => {
   window._moriIsModalOpen = false;
+  const fsPlayer = document.querySelector(
+    ".mori-player-container.mori-fullscreen",
+  );
+  if (fsPlayer && typeof fsPlayer._exitFullscreen === "function") {
+    fsPlayer._exitFullscreen();
+  }
   const slidesWrapper = document.getElementById("modalSlidesWrapper");
   if (slidesWrapper) {
     stopAllMedia(slidesWrapper);

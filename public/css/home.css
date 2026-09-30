@@ -475,13 +475,10 @@ input[type="text"]:focus {
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-  padding: 20px 15px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  padding: 28px 14px 12px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.72));
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease;
   z-index: 10;
 }
 
@@ -490,48 +487,57 @@ input[type="text"]:focus {
   opacity: 1;
 }
 
+/* Single-row control bar */
+.mori-player-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+}
+
 .mori-player-progress {
-  width: 100%;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.2);
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.25);
   border-radius: 2px;
   cursor: pointer;
   position: relative;
+  /* Larger touch target */
+  padding: 8px 0;
+  margin: -8px 0;
+  box-sizing: content-box;
 }
 
 .mori-player-progress-inner {
-  height: 100%;
-  background: var(--primary);
+  height: 3px;
+  background: #fff;
   width: 0%;
   border-radius: 2px;
   position: relative;
+  pointer-events: none;
 }
 
 .mori-player-progress-inner::after {
   content: "";
   position: absolute;
   right: -5px;
-  top: -3px;
-  width: 10px;
-  height: 10px;
-  background: var(--primary);
+  top: -4px;
+  width: 11px;
+  height: 11px;
+  background: #fff;
   border-radius: 50%;
-  box-shadow: 0 0 5px var(--primary);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
 
-.mori-player-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: #fff;
-  font-size: 0.75rem;
+.mori-player-cur,
+.mori-player-dur {
+  font-size: 0.72rem;
   font-weight: 600;
-}
-
-.mori-player-actions {
-  display: flex;
-  align-items: center;
-  gap: 15px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255,255,255,0.9);
+  white-space: nowrap;
+  min-width: 36px;
+  text-align: center;
 }
 
 .mori-player-btn {
@@ -573,6 +579,111 @@ input[type="text"]:focus {
   opacity: 1;
   transform: scale(1);
 }
+
+/* ── Custom Fullscreen ─────────────────────────────────── */
+.mori-player-container.mori-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  width: 100dvw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: none !important;
+  border-radius: 0 !important;
+  background: #000 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 99999 !important;
+}
+
+.mori-player-container.mori-fullscreen video {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  background: #000 !important;
+  background-color: #000 !important;
+}
+
+/* Top header in fullscreen: Title + Close Button */
+.mori-player-fs-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: max(16px, env(safe-area-inset-top, 16px)) 16px 20px;
+  background: linear-gradient(rgba(0, 0, 0, 0.75), transparent);
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  z-index: 100000;
+  pointer-events: none;
+}
+
+.mori-player-container.mori-fullscreen .mori-player-fs-top {
+  display: flex;
+}
+
+.mori-player-container:hover .mori-player-fs-top,
+.mori-player-container.touching .mori-player-fs-top {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mori-player-fs-title {
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+  letter-spacing: 0.3px;
+}
+
+.mori-player-fs-close {
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.mori-player-fs-close:active {
+  transform: scale(0.9);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Controls in fullscreen — adjust safe area padding */
+.mori-player-container.mori-fullscreen .mori-player-controls {
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  padding-left: max(16px, env(safe-area-inset-left, 16px));
+  padding-right: max(16px, env(safe-area-inset-right, 16px));
+  z-index: 100000;
+}
+
+/* Prevent body scroll when fullscreen active */
+body.mori-has-fullscreen {
+  overflow: hidden !important;
+}
+
+
 
 .dl-item {
   display: flex;

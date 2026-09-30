@@ -206,7 +206,24 @@ export async function resolveDownloadUrl({
     const parts = url.replace("soundloaders_resolve:", "").split("|||");
     const dataVal = parts[0];
     const tokenVal = parts[1];
-    const BASE = "https://soundloaders.app";
+    const baseVal = parts[2] ? decodeURIComponent(parts[2]) : "";
+    const BASE = "https://spotimate.app";
+
+    function createMultipartBody(fields) {
+      const boundary =
+        "----WebKitFormBoundary" + Math.random().toString(36).substring(2);
+      let body = "";
+      for (const [k, v] of Object.entries(fields)) {
+        if (v !== undefined && v !== null) {
+          body += `--${boundary}\r\nContent-Disposition: form-data; name="${k}"\r\n\r\n${v}\r\n`;
+        }
+      }
+      body += `--${boundary}--\r\n`;
+      return {
+        body,
+        contentType: `multipart/form-data; boundary=${boundary}`,
+      };
+    }
 
     let matchLink = "";
     let lastErr = null;
@@ -223,23 +240,24 @@ export async function resolveDownloadUrl({
           await new Promise((r) => setTimeout(r, 1500 * attempt));
         }
 
+        const mp = createMultipartBody({
+          data: dataVal,
+          token: tokenVal,
+          track_token: tokenVal,
+          ...(baseVal ? { base: baseVal } : {}),
+        });
+
         const res = await scraperFetch(
           {
-            url: BASE + "/action/tracks",
+            url: BASE + "/action/track",
             method: "POST",
             headers: {
-              "Content-Type":
-                "application/x-www-form-urlencoded; charset=UTF-8",
+              "Content-Type": mp.contentType,
               "User-Agent": getUserAgent(),
-              "X-Requested-With": "XMLHttpRequest",
-              Referer: BASE + "/",
+              Referer: BASE + "/en1",
               Origin: BASE,
             },
-            data:
-              "data=" +
-              encodeURIComponent(dataVal) +
-              "&track_token=" +
-              encodeURIComponent(tokenVal),
+            data: mp.body,
             rawResponse: true,
           },
           "Soundloaders",
@@ -252,9 +270,13 @@ export async function resolveDownloadUrl({
         }
         let dlHtml =
           (typeof dd === "object" ? dd?.html || dd?.data : dd) || "";
-        const match = dlHtml.match(
-          /href=["'](https:\/\/dl\.soundloaders\.app\/cdnv1\?token=[^"']+)["']/,
-        );
+        const match =
+          dlHtml.match(
+            /href=["'](https:\/\/(?:dl\.spotimate\.app|dl\.soundloaders\.app)[^"']+)["']/,
+          ) ||
+          dlHtml.match(
+            /href=["'](https:\/\/[^"']*(?:cdnv1|\/v1\?token=)[^"']+)["']/,
+          );
         if (match && match[1]) {
           matchLink = match[1];
           break;
@@ -295,26 +317,40 @@ export async function resolveDownloadUrl({
 
       const mobiHeaders = {
         Origin: "https://ytmp3.mobi",
-        Referer: "https://ytmp3.mobi/",
+        Referer: "https://ytmp3.mobi/en8/",
         "User-Agent": getUserAgent(),
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "cross-site",
+        Accept: "*/*",
       };
 
       const initData = await scraperFetch(
         {
-          url: "https://a.ymcdn.org/api/v1/init?p=y&23=1llum1n471",
+          url: `https://a.ymcdn.org/api/v1/init?p=y&23=1llum1n471&_=${Math.random()}`,
           headers: mobiHeaders,
         },
         "ytmp3.mobi Init",
       );
 
       if (initData && !initData.error && initData.convertURL) {
-        const convData = await scraperFetch(
+        let convData = await scraperFetch(
           {
-            url: `${initData.convertURL}&v=${ytId}&f=${format}`,
+            url: `${initData.convertURL}&v=${ytId}&f=${format}&_=${Math.random()}`,
             headers: mobiHeaders,
           },
           "ytmp3.mobi Convert",
         );
+
+        while (convData && convData.redirect > 0 && convData.redirectURL) {
+          convData = await scraperFetch(
+            {
+              url: `${convData.redirectURL}&v=${ytId}&f=${format}&_=${Math.random()}`,
+              headers: mobiHeaders,
+            },
+            "ytmp3.mobi Redirect",
+          );
+        }
 
         if (convData && !convData.error) {
           let dlUrl = convData.downloadURL;
@@ -330,7 +366,7 @@ export async function resolveDownloadUrl({
             if (!progUrl) break;
 
             const progData = await scraperFetch(
-              { url: progUrl, headers: mobiHeaders },
+              { url: `${progUrl}&_=${Math.random()}`, headers: mobiHeaders },
               "ytmp3.mobi Progress",
             );
             if (!progData || progData.error) break;

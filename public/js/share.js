@@ -516,31 +516,47 @@ async function triggerDownload(dlItem, title, idx) {
       const parts = finalUrl.replace("soundloaders_resolve:", "").split("|||");
       const dataVal = parts[0];
       const tokenVal = parts[1];
-      const BASE = "https://soundloaders.app";
+      const baseVal = parts[2] ? decodeURIComponent(parts[2]) : "";
+      const BASE = "https://spotimate.app";
+      const boundary =
+        "----WebKitFormBoundary" + Math.random().toString(36).substring(2);
+      const fields = {
+        data: dataVal,
+        token: tokenVal,
+        track_token: tokenVal,
+        ...(baseVal ? { base: baseVal } : {}),
+      };
+      let mpBody = "";
+      for (const [k, v] of Object.entries(fields)) {
+        if (v !== undefined && v !== null) {
+          mpBody += `--${boundary}\r\nContent-Disposition: form-data; name="${k}"\r\n\r\n${v}\r\n`;
+        }
+      }
+      mpBody += `--${boundary}--\r\n`;
+
       const resRaw = window.MoriShareBridge.httpRequest(
         JSON.stringify({
-          url: BASE + "/action/tracks",
+          url: BASE + "/action/track",
           method: "POST",
           headers: {
-            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "Content-Type": `multipart/form-data; boundary=${boundary}`,
             "User-Agent": getUserAgent(),
-            "X-Requested-With": "XMLHttpRequest",
-            Referer: BASE + "/",
+            Referer: BASE + "/en1",
             Origin: BASE,
           },
-          data:
-            "data=" +
-            encodeURIComponent(dataVal) +
-            "&track_token=" +
-            encodeURIComponent(tokenVal),
+          data: mpBody,
         }),
       );
       const res = JSON.parse(resRaw);
       let dd = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
-      let dlHtml = dd?.html || "";
-      const match = dlHtml.match(
-        /href=["'](https:\/\/dl\.soundloaders\.app\/cdnv1\?token=[^"']+)["']/,
-      );
+      let dlHtml = (typeof dd === "object" ? dd?.html || dd?.data : dd) || "";
+      const match =
+        dlHtml.match(
+          /href=["'](https:\/\/(?:dl\.spotimate\.app|dl\.soundloaders\.app)[^"']+)["']/,
+        ) ||
+        dlHtml.match(
+          /href=["'](https:\/\/[^"']*(?:cdnv1|\/v1\?token=)[^"']+)["']/,
+        );
       if (match && match[1]) finalUrl = match[1];
       else throw new Error("Could not resolve Soundloaders download link");
     } else if (
@@ -558,12 +574,16 @@ async function triggerDownload(dlItem, title, idx) {
       try {
         const initRaw = window.MoriShareBridge.httpRequest(
           JSON.stringify({
-            url: "https://a.ymcdn.org/api/v1/init?p=y&23=1llum1n471",
+            url: `https://a.ymcdn.org/api/v1/init?p=y&23=1llum1n471&_=${Math.random()}`,
             method: "GET",
             headers: {
               Origin: "https://ytmp3.mobi",
-              Referer: "https://ytmp3.mobi/",
+              Referer: "https://ytmp3.mobi/en8/",
               "User-Agent": getUserAgent(),
+              "Sec-Fetch-Dest": "empty",
+              "Sec-Fetch-Mode": "cors",
+              "Sec-Fetch-Site": "cross-site",
+              Accept: "*/*",
             },
           }),
         );
@@ -574,22 +594,42 @@ async function triggerDownload(dlItem, title, idx) {
             : initRes.data;
 
         if (initData && !initData.error && initData.convertURL) {
-          const convRaw = window.MoriShareBridge.httpRequest(
+          const convHeaders = {
+            Origin: "https://ytmp3.mobi",
+            Referer: "https://ytmp3.mobi/en8/",
+            "User-Agent": getUserAgent(),
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "cross-site",
+            Accept: "*/*",
+          };
+          let convRaw = window.MoriShareBridge.httpRequest(
             JSON.stringify({
-              url: `${initData.convertURL}&v=${ytId}&f=${format}`,
+              url: `${initData.convertURL}&v=${ytId}&f=${format}&_=${Math.random()}`,
               method: "GET",
-              headers: {
-                Origin: "https://ytmp3.mobi",
-                Referer: "https://ytmp3.mobi/",
-                "User-Agent": getUserAgent(),
-              },
+              headers: convHeaders,
             }),
           );
-          const convRes = JSON.parse(convRaw);
-          const convData =
+          let convRes = JSON.parse(convRaw);
+          let convData =
             typeof convRes.data === "string"
               ? JSON.parse(convRes.data)
               : convRes.data;
+
+          while (convData && convData.redirect > 0 && convData.redirectURL) {
+            convRaw = window.MoriShareBridge.httpRequest(
+              JSON.stringify({
+                url: `${convData.redirectURL}&v=${ytId}&f=${format}&_=${Math.random()}`,
+                method: "GET",
+                headers: convHeaders,
+              }),
+            );
+            convRes = JSON.parse(convRaw);
+            convData =
+              typeof convRes.data === "string"
+                ? JSON.parse(convRes.data)
+                : convRes.data;
+          }
 
           if (convData && !convData.error) {
             let dlUrl = convData.downloadURL;
@@ -604,13 +644,9 @@ async function triggerDownload(dlItem, title, idx) {
 
               const progRaw = window.MoriShareBridge.httpRequest(
                 JSON.stringify({
-                  url: progUrl,
+                  url: `${progUrl}&_=${Math.random()}`,
                   method: "GET",
-                  headers: {
-                    Origin: "https://ytmp3.mobi",
-                    Referer: "https://ytmp3.mobi/",
-                    "User-Agent": getUserAgent(),
-                  },
+                  headers: convHeaders,
                 }),
               );
               try {

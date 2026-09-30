@@ -125,9 +125,12 @@ export function buildDownloadHeaders(actualDownloadUrl, sourceUrl, url) {
     downloadHeaders["Accept"] = "*/*";
   }
 
-  if (actualDownloadUrl.includes("soundloaders")) {
-    downloadHeaders["Referer"] = "https://soundloaders.app/";
-    downloadHeaders["Origin"] = "https://soundloaders.app";
+  if (
+    actualDownloadUrl.includes("soundloaders") ||
+    actualDownloadUrl.includes("spotimate")
+  ) {
+    downloadHeaders["Referer"] = "https://spotimate.app/";
+    downloadHeaders["Origin"] = "https://spotimate.app";
     downloadHeaders["Accept"] = "*/*";
   }
 

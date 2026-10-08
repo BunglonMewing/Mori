@@ -221,6 +221,42 @@ function filteredItems() {
   return sortItems(items);
 }
 
+function galleryFallbackIcon(category) {
+  const placeholder = document.createElement("div");
+  placeholder.className = "gallery-media-icon";
+  const icons = {
+    video:
+      '<path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>',
+    audio:
+      '<path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>',
+    doc: '<path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>',
+  };
+  placeholder.innerHTML = `<svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor">${icons[category] || icons.doc}</svg>`;
+  return placeholder;
+}
+
+function createVideoThumb(mediaUrl, name) {
+  const video = document.createElement("video");
+  video.className = "gallery-video-thumb";
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = "metadata";
+  video.setAttribute("playsinline", "");
+  video.setAttribute("aria-label", name || "video");
+  const canFragment = /^(https?|file|asset|tauri):/i.test(mediaUrl) || mediaUrl.startsWith("/");
+  video.src = canFragment ? `${mediaUrl}#t=1` : mediaUrl;
+  video.addEventListener("loadeddata", () => {
+    try {
+      const mark = Math.min(1.5, (video.duration || 2) * 0.15);
+      if (mark > 0.2 && video.currentTime < mark) video.currentTime = mark;
+    } catch (_) {}
+  });
+  video.addEventListener("error", () => {
+    video.replaceWith(galleryFallbackIcon("video"));
+  });
+  return video;
+}
+
 function buildItem(item) {
   const card = document.createElement("div");
   card.className = `gallery-item cat-${item.category}`;
@@ -238,19 +274,17 @@ function buildItem(item) {
     img.loading = "lazy";
     img.referrerPolicy = "no-referrer";
     img.src = mediaUrl;
+    img.alt = item.name;
     thumb.appendChild(img);
+  } else if (item.category === "video") {
+    thumb.appendChild(createVideoThumb(mediaUrl, item.name));
+    const play = document.createElement("span");
+    play.className = "gallery-play-badge";
+    play.innerHTML =
+      '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+    thumb.appendChild(play);
   } else {
-    const placeholder = document.createElement("div");
-    placeholder.className = "gallery-media-icon";
-    const icons = {
-      video:
-        '<path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>',
-      audio:
-        '<path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>',
-      doc: '<path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>',
-    };
-    placeholder.innerHTML = `<svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor">${icons[item.category] || icons.doc}</svg>`;
-    thumb.appendChild(placeholder);
+    thumb.appendChild(galleryFallbackIcon(item.category));
   }
   thumb.appendChild(label);
 

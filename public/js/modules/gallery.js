@@ -113,45 +113,35 @@ export async function scanGallery(force = false) {
   const items = [];
   const seen = new Set();
 
-  const collect = (path, directory, sub) => {
-    return Filesystem.readdir({ path, directory })
-      .then(async (res) => {
-        for (const file of res.files || []) {
-          if (file.type === "directory") {
-            try {
-              const subFiles = await Filesystem.readdir({
-                path: path ? `${path}/${file.name}` : file.name,
-                directory,
-              });
-              for (const sf of subFiles.files || []) {
-                if (sf.type === "file") pushFile(sf, `${file.name}/`);
-              }
-            } catch (_) {}
-            continue;
-          }
-          pushFile(file, "");
+  // Recursively collect files from directories (handles nested music folders)
+  async function collectRecursive(dirPath, directory) {
+    try {
+      const res = await Filesystem.readdir({ path: dirPath, directory });
+      for (const file of res.files || []) {
+        if (file.type === "directory") {
+          // Recurse into subdirectory
+          const subPath = dirPath ? `${dirPath}/${file.name}` : file.name;
+          await collectRecursive(subPath, directory);
+        } else {
+          const cat = fileCategory(file.name);
+          if (!cat) continue;
+          const relPath = dirPath ? `${dirPath}/${file.name}` : file.name;
+          const key = `${directory}::${relPath}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          items.push({
+            name: file.name,
+            path: relPath,
+            directory,
+            category: cat,
+            size: file.size || 0,
+            mtime: file.mtime ? new Date(file.mtime).getTime() : 0,
+            folder: null,
+          });
         }
-      })
-      .catch(() => {});
-
-    function pushFile(file, prefix) {
-      const cat = fileCategory(file.name);
-      if (!cat) return;
-      const relPath = path ? `${path}/${prefix}${file.name}` : `${prefix}${file.name}`;
-      const key = `${directory}::${relPath}`;
-      if (seen.has(key)) return;
-      seen.add(key);
-      items.push({
-        name: file.name,
-        path: relPath,
-        directory,
-        category: cat,
-        size: file.size || 0,
-        mtime: file.mtime ? new Date(file.mtime).getTime() : 0,
-        folder: sub || null,
-      });
-    }
-  };
+      }
+    } catch (_) {}
+  }
 
   if (tauriInvoke) {
     for (const folder of folders) {
@@ -184,7 +174,8 @@ export async function scanGallery(force = false) {
     ];
     for (const folder of folders) {
       for (const dir of dirs) {
-        await collect(folder, dir.directory, folder);
+        // Use recursive scan to find files in nested folders (e.g. Music subfolder)
+        await collectRecursive(folder, dir.directory);
       }
     }
   }
